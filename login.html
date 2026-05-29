@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyQuiz — Вход</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<style>
+  :root { --sidebar-w: 0px; }
+
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-card {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 44px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.5);
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .login-logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--pk), var(--cy));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-logo-text {
+    font-size: 20px; font-weight: 800;
+    color: var(--text1);
+  }
+  .login-logo-text span { color: var(--pk2); }
+
+  .login-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg3);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+  .login-tab {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .login-tab.active {
+    background: var(--surf);
+    color: var(--text1);
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+
+  .login-form { display: flex; flex-direction: column; gap: 16px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .form-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text1);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .form-input:focus {
+    border-color: var(--pk2);
+    box-shadow: 0 0 0 3px rgba(200,80,240,.15);
+  }
+  .form-input::placeholder { color: var(--text3); }
+
+  .form-hint {
+    font-size: 11.5px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .login-btn {
+    margin-top: 4px;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--pk), var(--cy));
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .login-btn:hover { opacity: .9; }
+  .login-btn:active { transform: scale(.98); }
+  .login-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .login-error {
+    background: rgba(248,113,113,.12);
+    border: 1px solid rgba(248,113,113,.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #f87171;
+    display: none;
+  }
+  .login-error.show { display: block; }
+
+  .login-success {
+    background: rgba(52,211,153,.12);
+    border: 1px solid rgba(52,211,153,.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #34d399;
+    display: none;
+  }
+  .login-success.show { display: block; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .avatar-picker {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .avatar-color {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s;
+  }
+  .avatar-color:hover { transform: scale(1.15); }
+  .avatar-color.selected { border-color: #fff; transform: scale(1.15); }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="bg-orbs"></div>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="login-logo-text">Study<span>Quiz</span></div>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">Войти</button>
+      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">Регистрация</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="panel active" id="panelLogin">
+      <div class="login-form">
+        <div class="login-error" id="loginError"></div>
+        <div class="form-group">
+          <label class="form-label">Имя пользователя</label>
+          <input class="form-input" id="loginUsername" type="text" placeholder="username" autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input class="form-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="login-btn" id="loginBtn" onclick="doLogin()">
+          <span id="loginBtnText">Войти</span>
+          <div class="spinner" id="loginSpinner"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div class="panel" id="panelRegister">
+      <div class="login-form">
+        <div class="login-error" id="registerError"></div>
+        <div class="login-success" id="registerSuccess"></div>
+        <div class="form-group">
+          <label class="form-label">Имя пользователя</label>
+          <input class="form-input" id="regUsername" type="text" placeholder="например: alex_123" autocomplete="username" />
+          <div class="form-hint">Только буквы, цифры и _  (мин. 3 символа)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Отображаемое имя</label>
+          <input class="form-input" id="regDisplayName" type="text" placeholder="Как тебя звать?" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input class="form-input" id="regPassword" type="password" placeholder="Мин. 4 символа" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Цвет аватара</label>
+          <div class="avatar-picker" id="avatarPicker"></div>
+        </div>
+        <button class="login-btn" id="registerBtn" onclick="doRegister()">
+          <span id="registerBtnText">Создать аккаунт</span>
+          <div class="spinner" id="registerSpinner"></div>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:8000';
+
+// ── Avatar colors ──
+const COLORS = [
+  '#c850f0','#3b82f6','#10b981','#f59e0b',
+  '#ef4444','#8b5cf6','#ec4899','#06b6d4',
+  '#f97316','#84cc16',
+];
+let selectedColor = COLORS[0];
+
+function buildAvatarPicker() {
+  const picker = document.getElementById('avatarPicker');
+  COLORS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'avatar-color' + (c === selectedColor ? ' selected' : '');
+    el.style.background = c;
+    el.onclick = () => {
+      document.querySelectorAll('.avatar-color').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedColor = c;
+    };
+    picker.appendChild(el);
+  });
+}
+buildAvatarPicker();
+
+// ── Tab switch ──
+function switchTab(tab) {
+  document.getElementById('panelLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('panelRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  clearErrors();
+}
+
+function clearErrors() {
+  ['loginError','registerError','registerSuccess'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+  });
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.classList.add('show'); }
+}
+
+function setLoading(prefix, loading) {
+  const btn     = document.getElementById(prefix + 'Btn');
+  const text    = document.getElementById(prefix + 'BtnText');
+  const spinner = document.getElementById(prefix + 'Spinner');
+  if (btn)     btn.disabled = loading;
+  if (text)    text.style.opacity = loading ? '0' : '1';
+  if (spinner) spinner.style.display = loading ? 'block' : 'none';
+}
+
+// ── Save session ──
+function saveSession(user) {
+  localStorage.setItem('sq_current_user', JSON.stringify(user));
+  localStorage.setItem('sq_session_username', user.username);
+  // Remove old pq_* keys (legacy progress not tied to any user)
+  Object.keys(localStorage).filter(k => k.startsWith('pq_')).forEach(k => localStorage.removeItem(k));
+}
+
+// ── Login ──
+async function doLogin() {
+  clearErrors();
+  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  if (!username || !password) { showError('loginError', 'Заполни все поля'); return; }
+
+  setLoading('login', true);
+  try {
+    const res = await fetch(API_BASE + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      // Legacy account with no password — offer to set one
+      if (res.status === 401 && data.detail && data.detail.includes('no password')) {
+        showSetPasswordPanel(username, password);
+        setLoading('login', false);
+        return;
+      }
+      throw new Error(data.detail || 'Ошибка входа');
+    }
+    saveSession(data);
+    location.href = 'dashboard.html';
+  } catch (e) {
+    showError('loginError', e.message);
+    setLoading('login', false);
+  }
+}
+
+// ── Set password for legacy account (no password) ──
+async function showSetPasswordPanel(username, password) {
+  // Try to set the password automatically
+  try {
+    const res = await fetch(API_BASE + '/api/auth/set-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      // Password set, now login
+      const loginRes = await fetch(API_BASE + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) throw new Error(loginData.detail || 'Ошибка входа');
+      saveSession(loginData);
+      location.href = 'dashboard.html';
+      return;
+    }
+    // Password already set but wrong
+    if (res.status === 409) {
+      showError('loginError', 'Неверный пароль');
+      return;
+    }
+    throw new Error(data.detail || 'Ошибка');
+  } catch(e) {
+    showError('loginError', e.message);
+  }
+}
+
+// ── Register ──
+async function doRegister() {
+  clearErrors();
+  const username     = document.getElementById('regUsername').value.trim().toLowerCase();
+  const display_name = document.getElementById('regDisplayName').value.trim();
+  const password     = document.getElementById('regPassword').value;
+
+  if (!username || !display_name || !password) { showError('registerError', 'Заполни все поля'); return; }
+  if (!/^[a-z0-9_]{3,}$/.test(username))       { showError('registerError', 'Имя: только a-z, 0-9, _ (мин. 3 символа)'); return; }
+  if (password.length < 4)                      { showError('registerError', 'Пароль минимум 4 символа'); return; }
+
+  setLoading('register', true);
+  try {
+    const res = await fetch(API_BASE + '/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, display_name, password, avatar_color: selectedColor }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Ошибка регистрации');
+
+    // Set avatar color separately
+    await fetch(API_BASE + '/api/users/' + username, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ avatar_color: selectedColor }),
+    }).catch(() => {});
+
+    saveSession({ ...data, avatar_color: selectedColor });
+    location.href = 'dashboard.html';
+  } catch (e) {
+    showError('registerError', e.message);
+    setLoading('register', false);
+  }
+}
+
+// ── Enter key support ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginActive = document.getElementById('panelLogin').classList.contains('active');
+    if (loginActive) doLogin(); else doRegister();
+  }
+});
+
+// ── Already logged in? ──
+(function() {
+  const user = localStorage.getItem('sq_current_user');
+  if (user) { try { JSON.parse(user); location.href = 'dashboard.html'; } catch {} }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subject — StudyQuiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<div class="bg-orbs"></div>
+<div class="app-layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="sidebar-logo-text">Study<span>Quiz</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Навигация</div>
+      <a class="nav-item" href="dashboard.html">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="profile.html">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Профиль
+      </a>
+      <a class="nav-item" href="leaderboard.html">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Лидерборд
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Предметы</div>
+      <a class="nav-item" href="subject.html?s=physics">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Physics
+      </a>
+      <a class="nav-item" href="subject.html?s=linalg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        Linear Algebra 2
+      </a>
+      <a class="nav-item" href="subject.html?s=drawing">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Drawing
+      </a>
+      <a class="nav-item" href="subject.html?s=mathanalysis">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9"/><path d="M3 12h18M12 3c-2.5 3-4 6-4 9s1.5 6 4 9M12 3c2.5 3 4 6 4 9s-1.5 6-4 9"/></svg>
+        Math Analysis 2
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <a href="dashboard.html" class="back-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </a>
+        <div class="topbar-title" id="subjectTitle">Загрузка...</div>
+        <span class="topbar-badge" id="subjectBadge"></span>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="confirmResetSubject()" title="Сбросить прогресс предмета">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="inner-page">
+
+      <!-- Stats cards -->
+      <div class="stats-grid anim-1" id="statsGrid"></div>
+
+      <!-- Two-col: topics + history -->
+      <div class="two-col anim-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="panel-title-dot"></span>Прогресс по темам</div>
+          </div>
+          <div class="topic-list" id="topicList">
+            <div class="h-empty">Темы появятся после загрузки материалов</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="panel-title-dot"></span>История результатов</div>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="h-empty">Нет истории.<br>Пройди первый квиз!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode selector -->
+      <div class="anim-3">
+        <div class="section-title" style="margin-bottom:16px">Выбери режим</div>
+        <div class="mode-grid" id="modeGrid"></div>
+
+        <!-- Count row (for random mode) -->
+        <div class="count-row" id="countRow" style="display:none">
+          <div class="count-label">Количество вопросов:</div>
+          <div class="count-btns">
+            <button class="count-btn" onclick="setCount(10)">10</button>
+            <button class="count-btn active" onclick="setCount(20)">20</button>
+            <button class="count-btn" onclick="setCount(40)">40</button>
+            <button class="count-btn" onclick="setCount(50)">50</button>
+            <input type="number" class="count-custom" id="countCustom" value="20" min="5" max="999"
+                   oninput="setCountCustom(this.value)">
+          </div>
+        </div>
+
+        <!-- Coming soon banner (for subjects without questions yet) -->
+        <div class="coming-soon" id="comingSoon" style="display:none">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <div style="font-weight:700;margin-bottom:4px">Вопросы ещё не загружены</div>
+            <div style="font-size:13px;color:var(--text2)">Скинь материалы — добавим вопросы в квиз</div>
+          </div>
+        </div>
+
+        <button class="btn-start anim-4" id="btnStart" onclick="startQuiz()" style="display:none">
+          Начать квиз
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="arr" width="20" height="20"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
+      <!-- ── Question Browser (только для физики) ── -->
+      <div class="anim-5" id="questionBrowserWrap" style="margin-top:32px"></div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script>requireAuth();</script>
+<script src="js/physics_questions.js"></script>
+<script src="js/linalg2_questions.js"></script>
+<script src="js/drawing_questions.js"></script>
+<script src="js/subject.js"></script>
+</body>
+</html>
