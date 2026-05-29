@@ -533,3 +533,50 @@ function getSubjectStats(subjId) {
 
   return { results, mistakes, correct, total, best, avg };
 }
+
+
+// ── Mobile sidebar hamburger (injected on all pages with sidebar) ──
+(function initMobileSidebar() {
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.querySelector('.sidebar');
+    const topbar  = document.querySelector('.topbar');
+    if (!sidebar || !topbar) return;
+
+    // Overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    // Hamburger button
+    const btn = document.createElement('button');
+    btn.className = 'hamburger';
+    btn.setAttribute('aria-label', 'Меню');
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6"  x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>`;
+
+    // Insert hamburger as first child of topbar-left (or topbar itself)
+    const topbarLeft = topbar.querySelector('.topbar-left');
+    if (topbarLeft) {
+      topbarLeft.insertBefore(btn, topbarLeft.firstChild);
+    } else {
+      topbar.insertBefore(btn, topbar.firstChild);
+    }
+
+    function openSidebar()  { sidebar.classList.add('open');  overlay.classList.add('show');  }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+
+    btn.addEventListener('click', () =>
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar()
+    );
+    overlay.addEventListener('click', closeSidebar);
+
+    // Close when nav item clicked
+    sidebar.querySelectorAll('.nav-item').forEach(a =>
+      a.addEventListener('click', closeSidebar)
+    );
+  });
+})();

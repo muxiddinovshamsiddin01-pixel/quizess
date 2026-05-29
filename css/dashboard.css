@@ -309,6 +309,111 @@
 @media (max-width:900px) { .stats-grid { grid-template-columns: repeat(2,1fr); } .two-col { grid-template-columns:1fr; } .mode-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width:600px) { .subjects-grid { grid-template-columns:1fr; } .mode-grid { grid-template-columns:1fr; } .recent-grid { grid-template-columns: repeat(2,1fr); } }
 
+/* ══════════════════════════════════════════
+   MOBILE ADAPTIVE (≤ 600px)
+   ══════════════════════════════════════════ */
+@media (max-width: 600px) {
+
+  /* ── Dashboard: overall progress card ── */
+  .overall-progress-card { padding: 16px; }
+  .overall-header { flex-direction: column; gap: 4px; }
+  .overall-big-pct { font-size: 24px; }
+  .overall-subjects {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .overall-row-name { font-size: 12px; }
+  .overall-row-detail { font-size: 10px; }
+
+  /* ── Dashboard: stat cards ── */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .stat-card { padding: 14px; }
+  .stat-val { font-size: 22px; }
+  .stat-label { font-size: 9px; }
+  .stat-sub { font-size: 11px; }
+
+  /* ── Dashboard: subject cards ── */
+  .subjects-grid { grid-template-columns: 1fr; gap: 12px; }
+  .subject-card { padding: 16px; }
+  .subject-name { font-size: 15px; }
+  .subject-badge { font-size: 9px; padding: 2px 8px; }
+
+  /* ── Dashboard: recent activity ── */
+  .recent-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .recent-item { padding: 10px; }
+  .recent-score { font-size: 18px; }
+
+  /* ── Subject page: stats grid ── */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* ── Subject page: two-col → single col ── */
+  .two-col {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* ── Subject page: topic bars ── */
+  .topic-name { font-size: 13px; }
+  .topic-pct  { font-size: 11px; }
+  .topic-detail { font-size: 10px; }
+
+  /* ── Subject page: mode grid → 1 col ── */
+  .mode-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .mode-card { padding: 14px; }
+  .mode-name { font-size: 13px; }
+  .mode-desc { font-size: 11px; }
+  .mode-badge { font-size: 9px; }
+
+  /* ── Subject page: count row ── */
+  .count-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .count-btns { flex-wrap: wrap; }
+  .count-btn { min-width: 44px; height: 36px; font-size: 13px; }
+  .count-custom { width: 70px; height: 36px; }
+
+  /* ── Subject page: question browser ── */
+  .qbrowser-panel { border-radius: 12px; }
+  .qb-preview { max-width: 200px; font-size: 12px; }
+  .qbrowser-filters { gap: 4px; }
+  .qbf-btn { padding: 4px 10px; font-size: 11px; }
+
+  /* ── Start button ── */
+  .btn-start { font-size: 14px; padding: 14px; }
+
+  /* ── History list ── */
+  .history-item { padding: 8px 10px; gap: 8px; }
+  .h-score { font-size: 13px; }
+  .h-meta  { font-size: 10px; }
+}
+
+/* ── Topbar on mobile ── */
+@media (max-width: 600px) {
+  .topbar {
+    height: 52px;
+    padding: 0 12px;
+  }
+  .topbar-title { font-size: 16px; }
+  .topbar-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .streak-chip { padding: 4px 10px; font-size: 11px; }
+}
+
 
 /* ══════════════════════════════════════════
    OVERALL PROGRESS CARD

@@ -373,6 +373,9 @@ body {
   font-weight: 700;
 }
 
+/* ── Mobile sidebar toggle script injection ──
+   (hamburger is injected via JS in shared.css companion script) */
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
@@ -380,4 +383,45 @@ body {
   .main-content { margin-left: 0; }
   .inner-page { padding: 20px 16px 80px; }
   .topbar { padding: 0 16px; }
+}
+
+/* ── Mobile: hamburger + overlay ── */
+.hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--r-xs); align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text2); flex-shrink: 0;
+}
+.hamburger svg { width: 18px; height: 18px; }
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 49;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.show { display: block; }
+
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+
+  /* Topbar: не обрезать название */
+  .topbar-title {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100vw - 140px);
+  }
+  .topbar-user {
+    display: none; /* скрыть username под заголовком, места нет */
+  }
+
+  /* Subject page badge рядом с заголовком */
+  .topbar-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 }
