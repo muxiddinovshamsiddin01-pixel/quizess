@@ -229,7 +229,7 @@ def calc_points(pct: int, total: int, time_seconds: int) -> int:
 # ROUTES
 # ================================================================
 
-@app.get("/")
+@app.get("/api/ping")
 def ping():
     return {"status": "ok", "service": "StudyQuiz API"}
 
