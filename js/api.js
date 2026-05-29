@@ -4,7 +4,7 @@
  * NOTE: Auth object is defined in storage.js (loaded before this file)
  */
 
-const API_BASE    = 'http://localhost:8000';
+const API_BASE    = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
 const API_TIMEOUT = 10000;
 
 // ── Fetch wrapper ────────────────────────────────────────────
