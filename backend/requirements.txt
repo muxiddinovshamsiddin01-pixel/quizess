@@ -1,37 +1,21 @@
 # ================================================================
 # StudyQuiz Backend -- Python Dependencies
-# Python 3.10+ required
-#
+# Python 3.11+ required (tested on 3.14 for Render)
 # Install: pip install -r requirements.txt
 # ================================================================
 
 # -- Web framework -----------------------------------------------
-fastapi==0.111.0                # FastAPI async web framework
-uvicorn[standard]==0.29.0       # ASGI server
-
-# -- Database ----------------------------------------------------
-# SQLite is built into Python -- no extra package needed.
-# When migrating to Neon, uncomment the line below and re-enable
-# psycopg2 usage in main.py:
-# psycopg2==2.9.12              # PostgreSQL adapter for Neon
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
 
 # -- Config & env ------------------------------------------------
-python-dotenv==1.0.1            # Loads .env into os.environ
+python-dotenv>=1.0.1
 
 # -- Data validation ---------------------------------------------
-pydantic==2.7.1
-pydantic-core==2.18.2
+pydantic>=2.9.0
 
-# -- FastAPI internals -------------------------------------------
-starlette==0.37.2
-anyio==4.3.0
-sniffio==1.3.1
-typing-extensions==4.11.0
-annotated-types==0.6.0
-
-# -- HTTP / CORS -------------------------------------------------
-httpx==0.27.0          # async HTTP client (used for Gemini API calls)
-h11==0.14.0
+# -- HTTP client (Gemini API + self-pinger) ----------------------
+httpx>=0.27.0
 
 # -- Utilities ---------------------------------------------------
-click==8.1.7
+anyio>=4.4.0
