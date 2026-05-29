@@ -11,6 +11,8 @@ import httpx
 import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -29,6 +31,9 @@ RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "")
 _sqlite_path = DATABASE_URL.replace("sqlite:///", "")
 if _sqlite_path.startswith("./"):
     _sqlite_path = os.path.join(_BASE_DIR, _sqlite_path[2:])
+
+# Frontend root: one level up from backend/
+_FRONT_DIR = os.path.join(_BASE_DIR, "..")
 
 
 # ── Self-pinger: не даёт Render усыплять бэкенд ─────────────────
@@ -64,6 +69,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Раздача фронтенда ────────────────────────────────────────────
+app.mount("/css",    StaticFiles(directory=os.path.join(_FRONT_DIR, "css")),    name="css")
+app.mount("/js",     StaticFiles(directory=os.path.join(_FRONT_DIR, "js")),     name="js")
+app.mount("/images", StaticFiles(directory=os.path.join(_FRONT_DIR, "images")), name="images")
+
+@app.get("/", include_in_schema=False)
+def serve_login():
+    return FileResponse(os.path.join(_FRONT_DIR, "login.html"))
+
+@app.get("/dashboard", include_in_schema=False)
+def serve_dashboard():
+    return FileResponse(os.path.join(_FRONT_DIR, "dashboard.html"))
+
+@app.get("/quiz", include_in_schema=False)
+def serve_quiz():
+    return FileResponse(os.path.join(_FRONT_DIR, "quiz.html"))
+
+@app.get("/subject", include_in_schema=False)
+def serve_subject():
+    return FileResponse(os.path.join(_FRONT_DIR, "subject.html"))
+
+@app.get("/profile", include_in_schema=False)
+def serve_profile():
+    return FileResponse(os.path.join(_FRONT_DIR, "profile.html"))
+
+@app.get("/leaderboard", include_in_schema=False)
+def serve_leaderboard():
+    return FileResponse(os.path.join(_FRONT_DIR, "leaderboard.html"))
 
 # ----------------------------------------------------------------
 # DB helpers (SQLite)
@@ -584,7 +618,9 @@ Rules: Complete ALL 4 sections. Never truncate. Use bullet points (-) for lists.
 # ── Entry point ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.getenv("PORT", 8000))
     print(f"\n  DB   → {_sqlite_path}")
-    print(f"  Key  → {'SET ✓' if GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_NEW_KEY_HERE' else 'NOT SET ✗'}\n")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    print(f"  Key  → {'SET ✓' if GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_NEW_KEY_HERE' else 'NOT SET ✗'}")
+    print(f"  URL  → http://localhost:{port}\n")
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
