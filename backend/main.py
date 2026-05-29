@@ -80,22 +80,27 @@ def serve_login():
     return FileResponse(os.path.join(_FRONT_DIR, "login.html"))
 
 @app.get("/dashboard", include_in_schema=False)
+@app.get("/dashboard.html", include_in_schema=False)
 def serve_dashboard():
     return FileResponse(os.path.join(_FRONT_DIR, "dashboard.html"))
 
 @app.get("/quiz", include_in_schema=False)
+@app.get("/quiz.html", include_in_schema=False)
 def serve_quiz():
     return FileResponse(os.path.join(_FRONT_DIR, "quiz.html"))
 
 @app.get("/subject", include_in_schema=False)
+@app.get("/subject.html", include_in_schema=False)
 def serve_subject():
     return FileResponse(os.path.join(_FRONT_DIR, "subject.html"))
 
 @app.get("/profile", include_in_schema=False)
+@app.get("/profile.html", include_in_schema=False)
 def serve_profile():
     return FileResponse(os.path.join(_FRONT_DIR, "profile.html"))
 
 @app.get("/leaderboard", include_in_schema=False)
+@app.get("/leaderboard.html", include_in_schema=False)
 def serve_leaderboard():
     return FileResponse(os.path.join(_FRONT_DIR, "leaderboard.html"))
 
