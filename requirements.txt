@@ -1,0 +1,21 @@
+# ================================================================
+# StudyQuiz Backend -- Python Dependencies
+# Python 3.11+ required (tested on 3.14 for Render)
+# Install: pip install -r requirements.txt
+# ================================================================
+
+# -- Web framework -----------------------------------------------
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# -- Config & env ------------------------------------------------
+python-dotenv>=1.0.1
+
+# -- Data validation ---------------------------------------------
+pydantic>=2.9.0
+
+# -- HTTP client (Gemini API + self-pinger) ----------------------
+httpx>=0.27.0
+
+# -- Utilities ---------------------------------------------------
+anyio>=4.4.0
