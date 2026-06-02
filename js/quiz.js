@@ -368,6 +368,10 @@ function buildQuestions() {
     pool = [...all];
   } else if (mode === 'mistakes') {
     pool = all.filter(q => stored.includes(q.id));
+  } else if (mode === 'unseen') {
+    const correctIds = new Set(S.get('correct_ids', qParams.subject) || []);
+    const mistakeIds2 = new Set(S.get('mistakes', qParams.subject) || []);
+    pool = all.filter(q => !correctIds.has(q.id) && !mistakeIds2.has(q.id));
   } else if (qParams.subject === 'physics') {
     if      (mode === 'mechanics') pool = all.filter(q => TOPIC_IDS.mechanics.includes(q.id));
     else if (mode === 'fluids')    pool = all.filter(q => TOPIC_IDS.fluids.includes(q.id));
@@ -382,6 +386,10 @@ function buildQuestions() {
     else                                pool = [...all];
   } else if (qParams.subject === 'linalg') {
     const topicIds = LA2_TOPIC_IDS[mode];
+    if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
+    else          pool = [...all];
+  } else if (qParams.subject === 'fundamental') {
+    const topicIds = FUNDAMENTAL_TOPIC_IDS[mode];
     if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
     else          pool = [...all];
   } else {
@@ -400,7 +408,37 @@ function buildQuestions() {
     pool = pool.slice(0, n);
   }
 
-  questions = pool;
+  // ── Shuffle answer options (keep correct answer tracking) ──
+  questions = pool.map(q => {
+    const opts = qOpts(q);
+    if (!opts || opts.length < 2) return q;
+
+    // Build indexed array, shuffle, then remap correct index
+    const indexed = opts.map((opt, i) => ({ opt, i }));
+    // Fisher-Yates with seeded rng per question
+    const rng = seededRandom(qParams.seed ^ (q.id * 2654435761));
+    for (let i = indexed.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
+    }
+
+    const shuffledOpts    = indexed.map(x => x.opt);
+    const newCorrectIndex = indexed.findIndex(x => x.i === (typeof q.correct === 'number' ? q.correct : 0));
+
+    // Also remap closestAnswer if present (flagged questions)
+    let newClosest = q.closestAnswer;
+    if (typeof q.closestAnswer === 'number') {
+      newClosest = indexed.findIndex(x => x.i === q.closestAnswer);
+    }
+
+    return {
+      ...q,
+      opts:          shuffledOpts,
+      options:       shuffledOpts,   // normalise both field names
+      correct:       newCorrectIndex,
+      closestAnswer: newClosest,
+    };
+  });
 
   // startAt=<id> → переходим к нужному вопросу
   if (qParams.startAt != null) {
@@ -450,6 +488,8 @@ function renderQuestion() {
     topicName = la2Names[q.topic] || q.topic || 'Lin. Algebra 2';
   } else if (qParams.subject === 'drawing') {
     topicName = q.topic || 'Engineering Drawing';
+  } else if (qParams.subject === 'fundamental') {
+    topicName = q.topic || 'Fund. Strength of Materials';
   } else {
     topicName =
       TOPIC_IDS.mechanics.includes(q.id) ? 'Mechanics' :
@@ -1099,12 +1139,83 @@ function retryMistakes() {
   location.href = url.toString();
 }
 
-// ── Go back ──
+// ── Go back (с предупреждением если квиз не завершён) ──
+let _exitTargetUrl = null;
+
 function goBack() {
+  // Если квиз уже завершён — просто уходим
+  const doneScreen = document.getElementById('doneScreen');
+  if (doneScreen && doneScreen.style.display === 'block') {
+    _doGoBack();
+    return;
+  }
+  // Если ни один вопрос не был отвечен — тоже просто уходим
+  if (current === 0 && !answered) {
+    _doGoBack();
+    return;
+  }
+  // Иначе — показываем предупреждение
+  _exitTargetUrl = null; // будет определён при confirmExit
+  const modal = document.getElementById('exitConfirmModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  } else {
+    _doGoBack();
+  }
+}
+
+function closeExitModal() {
+  const modal = document.getElementById('exitConfirmModal');
+  if (modal) modal.style.display = 'none';
+  _exitTargetUrl = null;
+}
+
+function confirmExit() {
+  // Сохраняем прогресс перед выходом
+  _saveProgressOnExit();
+  closeExitModal();
+  _doGoBack();
+}
+
+function _saveProgressOnExit() {
+  // Сохраняем ошибки
+  const prevMistakes = S.get('mistakes', qParams.subject) || [];
+  const answeredIds  = questions.slice(0, current).map(q => q.id);
+  const newMistakes  = [...new Set([
+    ...prevMistakes.filter(id => !answeredIds.includes(id)),
+    ...mistakeIds
+  ])];
+  S.set('mistakes', newMistakes, qParams.subject);
+
+  // Сохраняем правильно отвеченные в этой сессии
+  const prevCorrect = S.get('correct_ids', qParams.subject) || [];
+  const sessionCorrect = questions.slice(0, current)
+    .filter(q => !mistakeIds.includes(q.id))
+    .map(q => q.id);
+  const newCorrect = [...new Set([...prevCorrect, ...sessionCorrect])];
+  S.set('correct_ids', newCorrect, qParams.subject);
+
+  // Если был прогресс — отправляем частичный результат в backend
+  if (current > 0 && typeof submitQuizResult === 'function') {
+    const total = current; // только отвеченные
+    const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+    const time = Math.round((Date.now() - window._quizStartTime) / 1000);
+    submitQuizResult({
+      subject: qParams.subject,
+      mode: qParams.mode + '_partial',
+      score: correct,
+      total,
+      pct,
+      time_seconds: time
+    });
+  }
+}
+
+function _doGoBack() {
   if (document.referrer && document.referrer.includes(location.hostname)) {
     history.back();
   } else {
-    location.href = 'subject.html';
+    location.href = 'subject.html?s=' + (qParams.subject || 'physics');
   }
 }
 
@@ -1121,6 +1232,12 @@ function showDone() {
   const prevMistakes = S.get('mistakes', qParams.subject) || [];
   const newMistakes  = [...new Set([...prevMistakes.filter(id => !questions.map(q=>q.id).includes(id)), ...mistakeIds])];
   S.set('mistakes', newMistakes, qParams.subject);
+
+  // Save correctly answered question IDs
+  const prevCorrect = S.get('correct_ids', qParams.subject) || [];
+  const sessionCorrect = questions.filter(q => !mistakeIds.includes(q.id)).map(q => q.id);
+  const newCorrect = [...new Set([...prevCorrect, ...sessionCorrect])];
+  S.set('correct_ids', newCorrect, qParams.subject);
 
   // Save result
   const results = S.get('results', qParams.subject) || [];
