@@ -567,10 +567,11 @@ function getSubjectStats(subjId) {
     const topbar  = document.querySelector('.topbar');
     if (!sidebar || !topbar) return;
 
-    // Overlay
+    // Overlay — вставляем внутрь app-layout чтобы z-index работал правильно
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
-    document.body.appendChild(overlay);
+    const appLayout = document.querySelector('.app-layout');
+    (appLayout || document.body).appendChild(overlay);
 
     // Hamburger button
     const btn = document.createElement('button');
