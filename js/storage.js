@@ -128,6 +128,21 @@ const SUBJECTS = {
       projections: { name: 'Projections',          color: '--cy'  },
       tolerances:  { name: 'Tolerances & Fits',    color: '--pk2' },
     }
+  },
+  fundamental: {
+    id:    'fundamental',
+    name:  'Fundamental Strength of Materials',
+    short: 'FSM',
+    color: '--vi2',
+    icon:  'beam',
+    desc:  'Material properties, stress & strain, structural analysis',
+    topics: {
+      material:   { name: 'Material Properties',  color: '--vi2' },
+      stress:     { name: 'Stress & Strain',       color: '--pk2' },
+      structural: { name: 'Structural Analysis',   color: '--cy'  },
+      internal:   { name: 'Internal Actions',      color: '--am'  },
+      safety:     { name: 'Stress & Safety Factor',color: '--gr'  },
+    }
   }
 };
 
@@ -171,6 +186,16 @@ const LA2_TOPIC_IDS = {
   eigenvalues:   [1046, 1047],
   powermethod:   [1042, 1043, 1045, 1049, 1050],
   floatingpoint: [1076, 1077, 1078],
+};
+
+// ── Fundamental Strength of Materials topic ID map ───────────
+// IDs 5001–5099 (see js/fundamental_questions.js)
+const FUNDAMENTAL_TOPIC_IDS = {
+  material:   [5001, 5003],
+  stress:     [5002],
+  structural: [5004],
+  internal:   [5005],
+  safety:     [5006],
 };
 
 // ── Math Analysis 2 questions (exam 22.01.2026) ──────────────
@@ -566,13 +591,25 @@ function getSubjectStats(subjId) {
       topbar.insertBefore(btn, topbar.firstChild);
     }
 
-    function openSidebar()  { sidebar.classList.add('open');  overlay.classList.add('show');  }
-    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+    function openSidebar()  {
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    }
 
     btn.addEventListener('click', () =>
       sidebar.classList.contains('open') ? closeSidebar() : openSidebar()
     );
-    overlay.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click',      closeSidebar);
+    overlay.addEventListener('touchstart', closeSidebar, { passive: true });
+
+    // Close on ESC
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeSidebar();
+    });
 
     // Close when nav item clicked
     sidebar.querySelectorAll('.nav-item').forEach(a =>
