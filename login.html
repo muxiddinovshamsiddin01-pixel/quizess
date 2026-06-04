@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudyQuiz — Вход</title>
+<title>StudyQuiz — Login</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/shared.css">
@@ -195,8 +195,8 @@
     </div>
 
     <div class="login-tabs">
-      <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">Войти</button>
-      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">Регистрация</button>
+      <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
     </div>
 
     <!-- LOGIN PANEL -->
@@ -204,15 +204,15 @@
       <div class="login-form">
         <div class="login-error" id="loginError"></div>
         <div class="form-group">
-          <label class="form-label">Имя пользователя</label>
+          <label class="form-label">Username</label>
           <input class="form-input" id="loginUsername" type="text" placeholder="username" autocomplete="username" />
         </div>
         <div class="form-group">
-          <label class="form-label">Пароль</label>
+          <label class="form-label">Password</label>
           <input class="form-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
         </div>
         <button class="login-btn" id="loginBtn" onclick="doLogin()">
-          <span id="loginBtnText">Войти</span>
+          <span id="loginBtnText">Sign In</span>
           <div class="spinner" id="loginSpinner"></div>
         </button>
       </div>
@@ -224,24 +224,24 @@
         <div class="login-error" id="registerError"></div>
         <div class="login-success" id="registerSuccess"></div>
         <div class="form-group">
-          <label class="form-label">Имя пользователя</label>
-          <input class="form-input" id="regUsername" type="text" placeholder="например: alex_123" autocomplete="username" />
-          <div class="form-hint">Только буквы, цифры и _  (мин. 3 символа)</div>
+          <label class="form-label">Username</label>
+          <input class="form-input" id="regUsername" type="text" placeholder="e.g. alex_123" autocomplete="username" />
+          <div class="form-hint">Letters, digits and _ only (min. 3 characters)</div>
         </div>
         <div class="form-group">
-          <label class="form-label">Отображаемое имя</label>
-          <input class="form-input" id="regDisplayName" type="text" placeholder="Как тебя звать?" />
+          <label class="form-label">Display name</label>
+          <input class="form-input" id="regDisplayName" type="text" placeholder="What should we call you?" />
         </div>
         <div class="form-group">
-          <label class="form-label">Пароль</label>
-          <input class="form-input" id="regPassword" type="password" placeholder="Мин. 4 символа" autocomplete="new-password" />
+          <label class="form-label">Password</label>
+          <input class="form-input" id="regPassword" type="password" placeholder="Min. 4 characters" autocomplete="new-password" />
         </div>
         <div class="form-group">
-          <label class="form-label">Цвет аватара</label>
+          <label class="form-label">Avatar color</label>
           <div class="avatar-picker" id="avatarPicker"></div>
         </div>
         <button class="login-btn" id="registerBtn" onclick="doRegister()">
-          <span id="registerBtnText">Создать аккаунт</span>
+          <span id="registerBtnText">Create account</span>
           <div class="spinner" id="registerSpinner"></div>
         </button>
       </div>
@@ -320,7 +320,7 @@ async function doLogin() {
   clearErrors();
   const username = document.getElementById('loginUsername').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
-  if (!username || !password) { showError('loginError', 'Заполни все поля'); return; }
+  if (!username || !password) { showError('loginError', 'Please fill in all fields'); return; }
 
   setLoading('login', true);
   try {
@@ -337,7 +337,7 @@ async function doLogin() {
         setLoading('login', false);
         return;
       }
-      throw new Error(data.detail || 'Ошибка входа');
+      throw new Error(data.detail || 'Login error');
     }
     saveSession(data);
     location.href = 'dashboard.html';
@@ -365,17 +365,17 @@ async function showSetPasswordPanel(username, password) {
         body: JSON.stringify({ username, password }),
       });
       const loginData = await loginRes.json();
-      if (!loginRes.ok) throw new Error(loginData.detail || 'Ошибка входа');
+      if (!loginRes.ok) throw new Error(loginData.detail || 'Login error');
       saveSession(loginData);
       location.href = 'dashboard.html';
       return;
     }
     // Password already set but wrong
     if (res.status === 409) {
-      showError('loginError', 'Неверный пароль');
+      showError('loginError', 'Incorrect password');
       return;
     }
-    throw new Error(data.detail || 'Ошибка');
+    throw new Error(data.detail || 'Error');
   } catch(e) {
     showError('loginError', e.message);
   }
@@ -388,9 +388,9 @@ async function doRegister() {
   const display_name = document.getElementById('regDisplayName').value.trim();
   const password     = document.getElementById('regPassword').value;
 
-  if (!username || !display_name || !password) { showError('registerError', 'Заполни все поля'); return; }
-  if (!/^[a-z0-9_]{3,}$/.test(username))       { showError('registerError', 'Имя: только a-z, 0-9, _ (мин. 3 символа)'); return; }
-  if (password.length < 4)                      { showError('registerError', 'Пароль минимум 4 символа'); return; }
+  if (!username || !display_name || !password) { showError('registerError', 'Please fill in all fields'); return; }
+  if (!/^[a-z0-9_]{3,}$/.test(username))       { showError('registerError', 'Username: only a-z, 0-9, _ (min. 3 chars)'); return; }
+  if (password.length < 4)                      { showError('registerError', 'Password must be at least 4 characters'); return; }
 
   setLoading('register', true);
   try {
@@ -400,7 +400,7 @@ async function doRegister() {
       body: JSON.stringify({ username, display_name, password, avatar_color: selectedColor }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Ошибка регистрации');
+    if (!res.ok) throw new Error(data.detail || 'Registration error');
 
     // Set avatar color separately
     await fetch(API_BASE + '/api/users/' + username, {

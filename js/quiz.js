@@ -17,6 +17,10 @@ let katexReady = false;
 let _answeredWithFlag = false; // true если юзер нажал кнопку Flag
 window._quizStartTime = Date.now();
 
+// История ответов для кнопки «Назад»
+// answeredHistory[i] = { answered, chosenIdx, wasFlag, correct, wrong, mistakeIds: [...] }
+let answeredHistory = [];
+
 // ── KaTeX / questions dual-gate init ──
 window._quizReady = function() {
   katexReady = true;
@@ -33,6 +37,7 @@ function initQuiz() {
   buildQuestions();
   renderQuestion();
   bindKeyboard();
+  updatePrevBtn();
 }
 
 // ── Normalise question field names ──
@@ -452,7 +457,7 @@ function buildQuestions() {
 function renderQuestion() {
   if (questions.length === 0) {
     const area = document.getElementById('questionArea');
-    if (area) area.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--text2);font-size:15px;">Нет вопросов для этого режима.</div>';
+    if (area) area.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--text2);font-size:15px;">No questions for this mode.</div>';
     return;
   }
   if (current >= questions.length) { showDone(); return; }
@@ -465,7 +470,7 @@ function renderQuestion() {
 
   const pct = Math.round((idx - 1) / tot * 100);
   setEl('progFill',  el => el.style.width = pct + '%');
-  setEl('progLabel', el => el.textContent  = `Вопрос ${idx} / ${tot}`);
+  setEl('progLabel', el => el.textContent  = `Question ${idx} / ${tot}`);
   setEl('progOk',    el => el.textContent  = correct);
   setEl('progErr',   el => el.textContent  = wrong);
   setEl('bstatOk',   el => el.textContent  = correct);
@@ -600,7 +605,7 @@ function renderQuestion() {
       <div class="q-text">${renderText(qText(q))}</div>
       <button class="hint-btn" id="hintBtn" onclick="openHintPanel()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-        Объяснение
+        Explanation
       </button>
       <button class="flag-btn" id="flagBtn" onclick="answerFlag()">🚩 Flag</button>
     </div>
@@ -765,19 +770,15 @@ function openHintPanel() {
     if (!isAnswered) {
       label.innerHTML = '';
     } else if (q.flagged && _answeredWithFlag) {
-      // ✅ Флаг нажат на некорректном вопросе — правильно
-      const cl = q.closestAnswer !== undefined ? ` (ближайший вариант: ${letters[q.closestAnswer]})` : '';
-      label.innerHTML = `<span style="color:#e53935;">🚩 Правильный ответ — Красный флаг${cl}</span>`;
+      const cl = q.closestAnswer !== undefined ? ` (closest option: ${letters[q.closestAnswer]})` : '';
+      label.innerHTML = `<span style="color:#e53935;">🚩 Correct answer — Red Flag${cl}</span>`;
     } else if (q.flagged && !_answeredWithFlag) {
-      // ❌ Выбран A/B/C/D на некорректном вопросе — правильный был флаг
-      const cl = q.closestAnswer !== undefined ? ` Ближайший вариант: (${letters[q.closestAnswer]})` : '';
-      label.innerHTML = `<span style="color:#e53935;">🚩 Правильный ответ — Красный флаг.${cl}</span>`;
+      const cl = q.closestAnswer !== undefined ? ` Closest option: (${letters[q.closestAnswer]})` : '';
+      label.innerHTML = `<span style="color:#e53935;">🚩 Correct answer — Red Flag.${cl}</span>`;
     } else if (!q.flagged && _answeredWithFlag) {
-      // ❌ Флаг нажат на корректном вопросе — ошибка
-      label.innerHTML = `<span style="color:#e57373;">🚩 Флаг выбран ошибочно — вопрос составлен корректно</span><br><span style="color:var(--gr);margin-top:4px;display:inline-block;">✓ Правильный ответ: (${letters[corr]})</span>`;
+      label.innerHTML = `<span style="color:#e57373;">🚩 Flag chosen incorrectly — the question is valid</span><br><span style="color:var(--gr);margin-top:4px;display:inline-block;">✓ Correct answer: (${letters[corr]})</span>`;
     } else {
-      // ✅ Обычный вопрос, выбран A/B/C/D
-      label.innerHTML = `<span style="color:var(--gr)">✓ Правильный ответ: (${letters[corr]})</span>`;
+      label.innerHTML = `<span style="color:var(--gr)">✓ Correct answer: (${letters[corr]})</span>`;
     }
   }
 
@@ -844,10 +845,10 @@ function openAiReviewModal(question, userAnswer, referenceAnswer, topic, onClose
 
       // Highlight verdict at top of modal body
       const verdictHtml = _aiLastVerdict === 'correct'
-        ? `<div class="ai-verdict ai-verdict--correct">✅ Правильно</div>`
+        ? `<div class="ai-verdict ai-verdict--correct">✅ Correct</div>`
         : _aiLastVerdict === 'partial'
-          ? `<div class="ai-verdict ai-verdict--partial">🟡 Частично правильно</div>`
-          : `<div class="ai-verdict ai-verdict--incorrect">❌ Неправильно</div>`;
+          ? `<div class="ai-verdict ai-verdict--partial">🟡 Partially correct</div>`
+          : `<div class="ai-verdict ai-verdict--incorrect">❌ Incorrect</div>`;
 
       body.innerHTML = verdictHtml + renderAiText(aiText);
 
@@ -1098,6 +1099,14 @@ function submitOpen() {
 // ── Next question ──
 function nextQuestion() {
   if (!answered) return;
+  // Сохраняем состояние текущего вопроса в историю
+  answeredHistory[current] = {
+    answered: true,
+    wasFlag: _answeredWithFlag,
+    correct: correct,
+    wrong: wrong,
+    mistakeIds: [...mistakeIds],
+  };
   // Reset adaptive scroll class before rendering next question
   const quizPage = document.querySelector('.quiz-page');
   if (quizPage) quizPage.classList.remove('overflow-scroll');
@@ -1106,7 +1115,82 @@ function nextQuestion() {
     showDone();
   } else {
     renderQuestion();
+    updatePrevBtn();
   }
+}
+
+// ── Previous question (только просмотр) ──
+function prevQuestion() {
+  if (current <= 0) return;
+  current--;
+  const quizPage = document.querySelector('.quiz-page');
+  if (quizPage) quizPage.classList.remove('overflow-scroll');
+  renderQuestion();
+  // Восстанавливаем состояние ответа для этого вопроса
+  const snap = answeredHistory[current];
+  if (snap && snap.answered) {
+    restoreAnswerState(snap);
+  }
+  updatePrevBtn();
+}
+
+// Обновить видимость кнопки «Назад на вопрос»
+function updatePrevBtn() {
+  const btn = document.getElementById('btnPrev');
+  if (btn) btn.classList.toggle('visible', current > 0);
+}
+
+// Восстановить визуальное состояние ответа из снапшота
+function restoreAnswerState(snap) {
+  answered = true;
+  _answeredWithFlag = snap.wasFlag;
+
+  const q    = questions[current];
+  const corr = qCorrect(q);
+  const grid = document.getElementById('optsGrid');
+
+  // Найдём выбранный индекс по разнице счётчиков ошибок
+  // (мы не храним chosenIdx явно, поэтому красим только правильный/неправильный)
+  if (grid) {
+    const btns = grid.querySelectorAll('.opt-btn, .opt-has-code');
+    btns.forEach((btn, idx) => {
+      if (q.flagged) {
+        if (q.closestAnswer !== undefined && idx === q.closestAnswer) {
+          btn.classList.add('closest-answer');
+        } else {
+          btn.classList.add('neutral-after');
+        }
+      } else {
+        if (idx === corr) {
+          btn.classList.add('correct');
+        } else {
+          btn.classList.add('neutral-after');
+        }
+      }
+      btn.classList.add('disabled');
+      btn.style.pointerEvents = 'none';
+    });
+  }
+
+  // Кнопка флага
+  const flagBtn = document.getElementById('flagBtn');
+  if (flagBtn) {
+    if (snap.wasFlag && q.flagged) {
+      flagBtn.classList.add('flag-btn--correct');
+    } else {
+      flagBtn.classList.add('flag-btn--neutral');
+    }
+    flagBtn.disabled = true;
+    flagBtn.style.pointerEvents = 'none';
+  }
+
+  // Hint кнопка активна
+  const hintBtn = document.getElementById('hintBtn');
+  if (hintBtn) hintBtn.classList.add('active');
+
+  // Кнопка Next активна, кнопка Prev видна
+  setEl('btnNext', el => el.disabled = false);
+  updatePrevBtn();
 }
 
 // ── Restart ──
@@ -1117,6 +1201,7 @@ function restart() {
   wrong    = 0;
   answered = false;
   mistakeIds = [];
+  answeredHistory = [];
   window._quizStartTime = Date.now();
 
   const done = document.getElementById('doneScreen');
@@ -1129,6 +1214,7 @@ function restart() {
   buildQuestions();
   renderQuestion();
   setEl('btnNext', el => el.disabled = true);
+  updatePrevBtn();
 }
 
 // ── Retry mistakes ──
@@ -1327,6 +1413,13 @@ function bindKeyboard() {
 
     // Open explanation
     if (e.key === 'e' || e.key === 'E') { openHintPanel(); return; }
+
+    // Previous question (стрелка влево)
+    if (e.key === 'ArrowLeft' && current > 0) {
+      e.preventDefault();
+      prevQuestion();
+      return;
+    }
 
     // Next question (Enter or Space when answered)
     if ((e.key === 'Enter' || e.key === ' ') && answered) {

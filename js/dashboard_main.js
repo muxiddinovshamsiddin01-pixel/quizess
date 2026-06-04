@@ -66,10 +66,10 @@ function renderOverallProgress() {
       const total   = allIds.length;
       const done    = allIds.filter(id => correct.has(id)).length;
       pct      = total > 0 ? Math.round(done / total * 100) : 0;
-      doneText = `${done} / ${total} вопросов`;
+      doneText = `${done} / ${total} questions`;
     } else {
       pct      = st.best || 0;
-      doneText = st.total > 0 ? `${st.total} попыт${st.total===1?'ка':'ок'} · лучший ${st.best||0}%` : 'нет попыток';
+      doneText = st.total > 0 ? `${st.total} attempt${st.total===1?'':'s'} · best ${st.best||0}%` : 'no attempts';
     }
 
     return { subj, hex, pct, doneText, hasQuestionBank: hasQuestionBank2, avg: st.avg, best: st.best };
@@ -84,8 +84,8 @@ function renderOverallProgress() {
   card.innerHTML = `
     <div class="overall-header">
       <div>
-        <div class="overall-title">Общий прогресс</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;font-family:'JetBrains Mono',monospace">по всем предметам</div>
+        <div class="overall-title">Overall Progress</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;font-family:'JetBrains Mono',monospace">across all subjects</div>
       </div>
       <div class="overall-big-pct" style="color:var(--pk)">${overallPct}%</div>
     </div>
@@ -139,32 +139,32 @@ function renderStats() {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
       </div>
       <div class="stat-val">${bestScore ? bestScore+'%' : '—'}</div>
-      <div class="stat-label">Лучший результат</div>
-      <div class="stat-sub">по всем предметам</div>
+      <div class="stat-label">Best Score</div>
+      <div class="stat-sub">across all subjects</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
       </div>
       <div class="stat-val">${totalAttempts}</div>
-      <div class="stat-label">Попыток всего</div>
-      <div class="stat-sub">все предметы</div>
+      <div class="stat-label">Total Attempts</div>
+      <div class="stat-sub">all subjects</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
       </div>
       <div class="stat-val">${avgAll ? avgAll+'%' : '—'}</div>
-      <div class="stat-label">Средний балл</div>
-      <div class="stat-sub">по всем попыткам</div>
+      <div class="stat-label">Average Score</div>
+      <div class="stat-sub">across all attempts</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9L9 15M9 9l6 6"/></svg>
       </div>
       <div class="stat-val">${totalMistakes}</div>
-      <div class="stat-label">Ошибок всего</div>
-      <div class="stat-sub">на повторение</div>
+      <div class="stat-label">Total Mistakes</div>
+      <div class="stat-sub">to review</div>
     </div>`;
 }
 
@@ -191,34 +191,34 @@ function renderSubjects() {
       progressHtml = `
         <div style="margin-top:10px">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">ИЗУЧЕНО</span>
+            <span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">STUDIED</span>
             <span style="font-size:11px;font-weight:700;color:${hex};font-family:'JetBrains Mono',monospace">${pct}%</span>
           </div>
           <div class="prog-bar">
             <div class="prog-fill" style="width:${pct}%;background:${hex};transition:width 1s ease"></div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace">${done}/${total} вопросов правильно</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace">${done}/${total} questions correct</div>
         </div>`;
     } else {
       const pct = st.best || 0;
       progressHtml = st.total > 0 ? `
         <div style="margin-top:10px">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">ЛУЧШИЙ</span>
+            <span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">BEST</span>
             <span style="font-size:11px;font-weight:700;color:${hex};font-family:'JetBrains Mono',monospace">${pct}%</span>
           </div>
           <div class="prog-bar">
             <div class="prog-fill" style="width:${pct}%;background:${hex};transition:width 1s ease"></div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace">${st.total} попыт${st.total===1?'ка':'ок'} · средний ${st.avg||0}%</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace">${st.total} attempt${st.total===1?'':'s'} · avg ${st.avg||0}%</div>
         </div>` : `
         <div style="margin-top:10px;font-size:11px;color:${hex}88;font-family:'JetBrains Mono',monospace;letter-spacing:.5px">
-          ⏳ ОЖИДАЕТ МАТЕРИАЛЫ
+          ⏳ AWAITING MATERIALS
         </div>`;
     }
 
-    const attText = st.total === 0 ? 'нет попыток' : `${st.total} попыт${st.total===1?'ка':'ок'}`;
-    const bestText = st.best ? ` · лучший ${st.best}%` : '';
+    const attText = st.total === 0 ? 'no attempts' : `${st.total} attempt${st.total===1?'':'s'}`;
+    const bestText = st.best ? ` · best ${st.best}%` : '';
 
     return `
     <a class="subject-card" href="subject.html?s=${subj.id}" style="--subj-color:${hex}">
@@ -256,7 +256,7 @@ function renderRecent() {
 
   if (!all.length) {
     wrap.innerHTML = `<div class="h-empty" style="padding:24px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);text-align:center">
-      Нет истории. Пройди первый квиз!
+      No history yet. Take your first quiz!
     </div>`;
     return;
   }
@@ -268,15 +268,15 @@ function renderRecent() {
     <div class="recent-item">
       <div class="recent-subj" style="color:${r.hex}">${r.subjName}</div>
       <div class="recent-score" style="color:${color}">${pct}%</div>
-      <div class="recent-detail">${r.score}/${r.total} · ${new Date(r.date).toLocaleDateString('ru')}</div>
+      <div class="recent-detail">${r.score}/${r.total} · ${new Date(r.date).toLocaleDateString('en')}</div>
       <div class="h-bar" style="width:100%"><div class="h-bar-fill" style="width:${pct}%;background:${color}"></div></div>
     </div>`;
   }).join('')}</div>`;
 }
 
-function showAllHistory() { alert('История — скоро!'); }
+function showAllHistory() { alert('History — coming soon!'); }
 function confirmResetAll() {
-  if (confirm('⚠️ Сбросить весь прогресс?')) { S.clearAll(); location.reload(); }
+  if (confirm('⚠️ Reset all progress?')) { S.clearAll(); location.reload(); }
 }
 
 // ── Render recent activity from backend results ────────────
@@ -294,7 +294,7 @@ function renderRecentFromBackend(results) {
     const color = pct>=80?'var(--gr)':pct>=60?'var(--am)':'var(--re)';
     const hex   = colorMap[r.subject] || '#c850f0';
     const name  = nameMap[r.subject] || r.subject;
-    const date  = new Date(r.played_at).toLocaleDateString('ru');
+    const date  = new Date(r.played_at).toLocaleDateString('en');
     return `
     <div class="recent-item">
       <div class="recent-subj" style="color:${hex}">${name}</div>

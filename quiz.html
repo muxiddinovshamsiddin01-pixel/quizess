@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/shared.css">
-<link rel="stylesheet" href="css/quiz.css">
+<link rel="stylesheet" href="css/quiz.css?v=2">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <style>
   /* Quiz page has no sidebar */
@@ -22,9 +22,9 @@
 <!-- Progress header -->
 <header class="progress-header">
   <div class="progress-top">
-    <button class="btn-ghost-sm" onclick="goBack()" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
+    <button class="btn-next" onclick="goBack()" style="padding:8px 18px;font-size:13px;">
+      <svg class="arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>Back</span>
     </button>
     <span class="progress-label" id="progLabel">Question 1 / …</span>
     <div class="progress-counters">
@@ -127,16 +127,16 @@
 <div class="fb-modal-wrap" id="exitConfirmModal" style="display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeExitModal()">
   <div class="fb-modal" style="max-width:380px;padding:32px 28px;text-align:center;">
     <div style="font-size:36px;margin-bottom:12px;">⚠️</div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text1)">Завершить квиз?</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text1)">Exit quiz?</div>
     <div style="font-size:14px;color:var(--text3);margin-bottom:24px;line-height:1.5">
-      Прогресс будет сохранён, и ты сможешь продолжить позже из раздела «Нерешённые вопросы».
+      Progress will be saved and you can continue later from the "Unsolved Questions" section.
     </div>
     <div style="display:flex;gap:10px;justify-content:center;">
       <button onclick="closeExitModal()" class="done-btn done-btn--ghost" style="flex:1">
-        Продолжить
+        Continue
       </button>
       <button onclick="confirmExit()" class="done-btn done-btn--danger" style="flex:1">
-        Завершить
+        Exit
       </button>
     </div>
   </div>
@@ -193,10 +193,16 @@
   <div class="hotkeys">
     Keys 1–4 / A–D to answer · E = explanation · Esc = close
   </div>
-  <button class="btn-next" id="btnNext" onclick="nextQuestion()" disabled>
-    Next
-    <svg class="arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-  </button>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="btn-prev" id="btnPrev" onclick="prevQuestion()">
+      <svg class="arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>Back</span>
+    </button>
+    <button class="btn-next" id="btnNext" onclick="nextQuestion()" disabled>
+      <span>Next</span>
+      <svg class="arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- Scripts -->

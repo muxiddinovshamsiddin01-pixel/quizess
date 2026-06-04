@@ -17,16 +17,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!online) {
     document.getElementById('offlineBanner2').style.display = 'block';
     document.getElementById('lbTable').innerHTML =
-      '<div style="padding:40px;text-align:center;color:var(--text3)">Запусти backend/start.bat и обнови страницу</div>';
+      '<div style="padding:40px;text-align:center;color:var(--text3)">Start backend/start.bat and refresh the page</div>';
     return;
   }
   await loadLeaderboard();
 });
 
 async function loadLeaderboard() {
-  // Показываем спиннер
+  // Show loading spinner
   document.getElementById('lbTable').innerHTML =
-    '<div style="padding:40px;text-align:center;color:var(--text3)">Загрузка...</div>';
+    '<div style="padding:40px;text-align:center;color:var(--text3)">Loading...</div>';
 
   try {
     const myUsername = Auth.getUsername();
@@ -37,7 +37,7 @@ async function loadLeaderboard() {
 
     if (!rows || rows.length === 0) {
       document.getElementById('lbTable').innerHTML =
-        '<div style="padding:48px;text-align:center;color:var(--text3)">Пока нет зарегистрированных игроков.<br><span style="font-size:13px;margin-top:8px;display:block">Пройди первый квиз — и ты окажешься первым!</span></div>';
+        '<div style="padding:48px;text-align:center;color:var(--text3)">No registered players yet.<br><span style="font-size:13px;margin-top:8px;display:block">Take the first quiz — you\'ll be first!</span></div>';
       document.getElementById('podiumRow').style.display = 'none';
       return;
     }
@@ -46,7 +46,7 @@ async function loadLeaderboard() {
       const me = rows.find(r => r.username === myUsername);
       document.getElementById('myRankCard').style.display = 'flex';
       document.getElementById('myRankNum').textContent = '#' + myRank.rank;
-      document.getElementById('myRankPts').textContent = (me?.total_points || 0).toLocaleString('ru') + ' очков';
+      document.getElementById('myRankPts').textContent = (me?.total_points || 0).toLocaleString('en') + ' pts';
     }
 
     renderPodium(rows.slice(0, 3));

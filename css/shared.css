@@ -173,6 +173,14 @@ body {
   font-weight: 600;
 }
 .nav-item.active svg { opacity: 1; color: var(--pk2); }
+.nav-item.nav-action,
+.nav-item.nav-action:hover,
+.nav-item.nav-action:focus,
+.nav-item.nav-action.active {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--text2);
+}
 
 /* ── Main content ── */
 .main-content {

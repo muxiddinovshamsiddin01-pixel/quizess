@@ -36,14 +36,14 @@ function updateStreak() {
   }
 
   const n = streak.current;
-  const dayWord = n === 1 ? 'день' : (n >= 2 && n <= 4 ? 'дня' : 'дней');
+  const dayWord = n === 1 ? 'day' : 'days';
   document.getElementById('streakNum').innerHTML =
     `<span class="highlight">${n}</span> ${dayWord}`;
 
   document.getElementById('streakMsg').textContent =
-    n === 0     ? 'Начни сегодня — пройди первый квиз!' :
-    n >= 7      ? 'Огонь! Не останавливайся 🔥' :
-                  'Отличная серия! Продолжай каждый день';
+    n === 0     ? 'Start today — take your first quiz!' :
+    n >= 7      ? 'On fire! Keep it up 🔥' :
+                  'Great streak! Keep going every day';
 
   document.getElementById('streakBest').textContent = streak.best;
 }
@@ -63,17 +63,17 @@ function updateStats() {
 
   document.getElementById('statBest').textContent    = best + '%';
   document.getElementById('statBestSub').textContent =
-    `${bestR.score}/${bestR.total} · ${new Date(bestR.date).toLocaleDateString('ru')}`;
+    `${bestR.score}/${bestR.total} · ${new Date(bestR.date).toLocaleDateString('en')}`;
 
   document.getElementById('statAttempts').textContent    = results.length;
   document.getElementById('statAttemptsSub').textContent =
     results.length === 1
-      ? 'первая попытка!'
-      : `посл.: ${new Date(results[results.length - 1].date).toLocaleDateString('ru')}`;
+      ? 'first attempt!'
+      : `last: ${new Date(results[results.length - 1].date).toLocaleDateString('en')}`;
 
   document.getElementById('statAvg').textContent    = avg + '%';
   document.getElementById('statAvgSub').textContent =
-    `по ${results.length} попытк${results.length === 1 ? 'е' : 'ам'}`;
+    `over ${results.length} attempt${results.length === 1 ? '' : 's'}`;
 }
 
 // ── Topic progress ──
@@ -97,7 +97,7 @@ function updateTopics() {
 
     if (pctEl) pctEl.textContent = pct + '%';
     if (barEl) setTimeout(() => { barEl.style.width = pct + '%'; }, 200);
-    if (detEl) detEl.textContent = `${done} / ${t.total} вопросов правильно`;
+    if (detEl) detEl.textContent = `${done} / ${t.total} correct`;
   });
 }
 
@@ -108,14 +108,14 @@ function updateHistory() {
   if (!el) return;
 
   if (results.length === 0) {
-    el.innerHTML = `<div class="h-empty">Нет истории.<br>Пройди первый квиз!</div>`;
+    el.innerHTML = `<div class="h-empty">No history.<br>Take your first quiz!</div>`;
     return;
   }
 
   const modeNames = {
-    all: 'Все вопросы', mistakes: 'Ошибки',
+    all: 'All questions', mistakes: 'Mistakes',
     mechanics: 'Mechanics', fluids: 'Fluids',
-    thermo: 'Thermo', random: 'Быстрый'
+    thermo: 'Thermo', random: 'Random'
   };
 
   el.innerHTML = results.map((r, i) => {
@@ -128,7 +128,7 @@ function updateHistory() {
           <div class="h-score" style="color:${color}">
             ${pct}% <span style="font-size:11px;color:var(--text3)">(${r.score}/${r.total})</span>
           </div>
-          <div class="h-meta">${modeNames[r.mode] || r.mode} · ${new Date(r.date).toLocaleDateString('ru')}</div>
+          <div class="h-meta">${modeNames[r.mode] || r.mode} · ${new Date(r.date).toLocaleDateString('en')}</div>
         </div>
         <div class="h-bar"><div class="h-bar-fill" style="width:${pct}%"></div></div>
       </div>`;
@@ -191,7 +191,7 @@ function startQuiz() {
 
 // ── Reset ──
 function confirmReset() {
-  if (confirm('⚠️ Сбросить весь прогресс? Это нельзя отменить.')) {
+  if (confirm('⚠️ Reset all progress? This cannot be undone.')) {
     S.clear();
     location.reload();
   }
