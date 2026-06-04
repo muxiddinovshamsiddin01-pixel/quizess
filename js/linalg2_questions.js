@@ -1927,5 +1927,298 @@ window.LA2_QUESTIONS = [
     explanation: 'In MATLAB, element-wise squaring of a vector requires the dot notation: `x.^2`. So the correct command is `y=log(x.^2+1)`. `log` in MATLAB computes the natural logarithm element-wise on vectors without needing a dot.',
   },
 
+  {
+    id: 1126,
+    isNew: true,
+    topic: 'QR factorization',
+    q: 'We are given the factor $Q$ and $R$ of the QR factorization of a nonsingular matrix $A$ of dimensions $n \\times n$. We want to solve the $M$ linear systems $Ax_i = b_i$, $i = 1, \\ldots, M$, where the vectors $x_i$ are the columns of matrix $X$ and the vectors $b_i$ are the columns of matrix $B$. Which of the following MATLAB codes solves the considered problem?',
+    opts: [
+      '```\nfor i = 1:M\n  X(:,i) = R \\ (Q\'*B(:,i));\nend```',
+      '```\nfor i = 1:M\n  X(:,i) = Q \\ (R\'*B(:,i));\nend```',
+      '```\nfor i = 1:M\n  X(:,i) = A\\B(:,i);\nend```',
+      '```\nfor i = 1:M\n  X(:,i) = (Q*R)\\B(:,i);\nend```',
+    ],
+    correct: 0,
+    explanation: 'Since $A = QR$, solving $Ax = b$ means $QRx = b$, so $Rx = Q^T b$ (since $Q$ is orthogonal, $Q^{-1} = Q^T$). Thus `X(:,i) = R \\ (Q\'*B(:,i))` is correct.',
+  },
+
+  {
+    id: 1127,
+    isNew: true,
+    topic: 'Splines',
+    q: 'Consider the following set of Matlab commands:\n```\nx=linspace(-1,1,10);\nxx=linspace(-1,1);\ny=sin(pi*x);\nz=spline(x,y,xx);\n```\nWhat is their result?',
+    opts: [
+      'They compute and evaluate, at 100 equally spaced points in $[-1, 1]$, the not-a-knot spline interpolating the function $f(x) = \\sin(\\pi x)$ on 10 equally spaced points in $[-1, 1]$.',
+      'They compute and evaluate, at 100 equally spaced points in $[-1, 1]$, the constrained cubic spline interpolating the function $f(x) = \\sin(\\pi x)$ on 10 equally spaced points in $[-1, 1]$.',
+      'They compute the coefficients of the not-a-knot cubic spline by interpolating the function $f(x) = \\sin(\\pi x)$ into 10 equally spaced points in $[-1, 1]$.',
+      'They compute the coefficients of the natural cubic spline by interpolating the function $f(x) = \\sin(\\pi x)$ into 10 equally spaced points in $[-1, 1]$.',
+    ],
+    correct: 0,
+    explanation: '`spline(x,y,xx)` in MATLAB computes and evaluates the not-a-knot cubic spline at the points `xx`. Since `xx=linspace(-1,1)` has 100 points by default, it evaluates the spline at 100 equally spaced points.',
+  },
+
+  {
+    id: 1128,
+    isNew: true,
+    topic: 'Eigenvalues',
+    q: 'Let the matrix be given, and assume to apply the power method. Let be the approximation of the eigenvector corresponding to the eigenvalue of maximum modulus at step $m$.\n$$A = \\begin{pmatrix} 5 & 1 \\\\ 2 & 3 \\end{pmatrix}, \\quad Aw^{(m)} = \\begin{pmatrix} 1 \\\\ 0 \\end{pmatrix} \\lambda_1^m$$\nWhat is the value of $\\lambda_1^{(m)}$, that is the approximation of $\\lambda_1$ at step $m$?',
+    opts: [
+      '$-2$',
+      '$6$',
+      '$5$',
+      '$0$',
+    ],
+    correct: 2,
+    explanation: 'Using the Rayleigh quotient with $w^{(m)} = (1, 0)^T$: $\\lambda_1^{(m)} = \\frac{w^{(m)T} A w^{(m)}}{w^{(m)T} w^{(m)}} = \\frac{(1,0)\\begin{pmatrix}5&1\\\\2&3\\end{pmatrix}\\begin{pmatrix}1\\\\0\\end{pmatrix}}{(1,0)\\begin{pmatrix}1\\\\0\\end{pmatrix}} = \\frac{5}{1} = 5$.',
+  },
+
+  {
+    id: 1129,
+    isNew: true,
+    topic: 'SVD',
+    q: 'Given a matrix $A \\in R^{m,n}$, with $m \\neq n$, and its decomposition $U^T A V = S$, say which of the following statements is true:',
+    opts: [
+      '$S$, $U$ and $V$ are uniquely determined',
+      '$S$ is uniquely determined',
+      '$S$ is square and diagonal',
+      '$S$ is orthogonal',
+    ],
+    correct: 1,
+    explanation: 'In the SVD decomposition $U^T A V = S$, the matrix $S$ (containing the singular values) is uniquely determined — the singular values are unique. However $U$ and $V$ are not unique. Since $m \\neq n$, $S$ is not square.',
+  },
+
+  {
+    id: 1130,
+    isNew: true,
+    topic: 'SVD',
+    q: 'Assume that in Matlab you use the command `s=svd(A)`, with $A \\in \\mathbb{R}^{7 \\times 9}$, and you get the output `s = [5 3.1 1.45 1 0 0 0]`. What is the rank of the matrix $A$?',
+    opts: [
+      '$5$',
+      '$1$',
+      '$4$',
+      '$7$',
+    ],
+    correct: 2,
+    explanation: 'The rank equals the number of nonzero singular values. From `s = [5 3.1 1.45 1 0 0 0]`, there are 4 nonzero singular values, so $\\text{rank}(A) = 4$.',
+  },
+
+  {
+    id: 1131,
+    isNew: true,
+    topic: 'Matrix operations',
+    q: 'Let $A$ be a matrix with 5 columns. Which of the following MATLAB instructions returns the fifth column of $A$?',
+    opts: [
+      '`col(5,A)`',
+      '`A(:,end)`',
+      '`col(A,5)`',
+      '`A(\'all\',5)`',
+    ],
+    correct: 1,
+    explanation: '`A(:,end)` selects all rows of the last column of $A$. Since $A$ has 5 columns, `end` refers to column 5.',
+  },
+
+  {
+    id: 1132,
+    isNew: true,
+    topic: 'LU factorization',
+    q: 'Suppose the matrix\n$$A = \\begin{pmatrix} 1 & 3 & -2 \\\\ 0 & 0 & 1 \\\\ 0 & -1 & 3 \\end{pmatrix}$$\nis factorized as\n$$A = \\begin{pmatrix} 1 & 0 & 0 \\\\ 0 & 0 & 1 \\\\ 0 & 1 & 0 \\end{pmatrix} \\begin{pmatrix} 1 & 3 & -2 \\\\ 0 & -1 & 3 \\\\ 0 & 0 & 1 \\end{pmatrix}.$$\nWhat type of factorization does this represent?',
+    opts: [
+      'An SVD factorization',
+      'A QR factorization',
+      'An LU factorization',
+      'A Choleski factorization',
+    ],
+    correct: 1,
+    explanation: 'The first matrix is a permutation matrix $P$ (rows of identity reordered) and the second is upper triangular $U$. This is a QR factorization — specifically $A = P^T U$, which corresponds to an LU with pivoting. The correct answer shown is A QR factorization.',
+  },
+
+  {
+    id: 1133,
+    isNew: true,
+    topic: 'Floating point',
+    q: 'Consider a floating point arithmetic with basis $N = 10$ and $t = 5$ digits for the mantissa. Which of the following numbers, if added to $a = 0.45678$, produces numerical cancellation?',
+    opts: [
+      '$-0.456$',
+      '$-0.4562312$',
+      '$-0.45623e-01$',
+      '$0.45623$',
+    ],
+    correct: 1,
+    explanation: 'Numerical cancellation occurs when two nearly equal numbers are subtracted. $-0.4562312$ is very close in magnitude to $a = 0.45678$, so their sum causes significant cancellation of significant digits.',
+  },
+
+  {
+    id: 1134,
+    isNew: true,
+    topic: 'Matrix operations',
+    q: 'Among the following Matlab commands, which one allows to depict the function $f(x) = x^2 e^x$ over the interval $[0, 1]$?',
+    opts: [
+      '`x=linspace(0,1); y=x.^2.*e^x; plot(x,y)`',
+      '`x=0:1; y=x.^2 .*exp(x); plot(x,y)`',
+      '`x=linspace(0,1); y=x.^2.*exp(x); plot(x,y)`',
+      '`x=0:0.1:1; y=x.^2.*e^x; plot(x,y)`',
+    ],
+    correct: 2,
+    explanation: '`linspace(0,1)` creates 100 points by default, `x.^2` performs element-wise squaring, and `exp(x)` is the correct MATLAB function for $e^x$. The `.*` operator applies element-wise multiplication.',
+  },
+
+  {
+    id: 1135,
+    isNew: true,
+    topic: 'Matrix operations',
+    q: 'Let the matrix $A \\in R^{m,n}$ and the column vector $x \\in R^n$ be given.\n\nDenote by $y\\_3$ the third component of $y = Ax$, which one of the following MATLAB instructions computes $y\\_3$?',
+    opts: [
+      '`y_3=A(3,:).*x`',
+      '`y_3=A(3,:).*x(3)`',
+      '`y_3=A.*x(3)`',
+      '`y_3=A(3,:)*x`',
+    ],
+    correct: 3,
+    explanation: 'The third component of $y = Ax$ is the dot product of the third row of $A$ with the full vector $x$: `y_3 = A(3,:)*x`.',
+  },
+
+  {
+    id: 1136,
+    isNew: true,
+    topic: 'Eigenvalues',
+    q: 'Let the matrix\n$$A = \\begin{pmatrix} 4 & 1 \\\\ 5 & 6 \\end{pmatrix}$$\nbe given, and assume to apply the power method to $A$. Let $w^{(m)} = \\begin{pmatrix} 1 \\\\ 0 \\end{pmatrix}$ be the approximation of the eigenvector corresponding to the eigenvalue of maximum modulus $\\lambda_1$ at step $m$.\n\nWhat is the value of $\\lambda_1^{(m)}$, that is the approximation of $\\lambda_1$ at step $m$?',
+    opts: [
+      '$7$',
+      '$16$',
+      '$4$',
+    ],
+    correct: 2,
+    explanation: 'Using the Rayleigh quotient with $w^{(m)} = (1,0)^T$: $\\lambda_1^{(m)} = \\frac{w^{(m)T} A w^{(m)}}{w^{(m)T} w^{(m)}} = (1,0)\\begin{pmatrix}4\\\\5\\end{pmatrix} / 1 = 4$.',
+  },
+
+  {
+    id: 1137,
+    isNew: true,
+    topic: 'Eigenvalues',
+    q: 'Given a matrix $A$ of dimension $n \\times n$, assume one applies to $A$ the inverse power method, with the aim of finding the eigenvalue $\\lambda$ closest to $p = 3$ and the corresponding eigenvector $x$. Let `wk` be a MATLAB variable containing the approximation of $x$ at the $k$-th iteration of the method.\n\nWhich one of the following MATLAB instructions creates a variable `lambdak` containing the approximation of $\\lambda$ at step $k$?',
+    opts: [
+      '`zk = (A - 3*eye(n))\\wk; lambdak = 3 - 1/(wk\'*zk);`',
+      '`zk = (A + 3*eye(n))\\wk; lambdak = 3 - 1/(wk\'*zk);`',
+      '`zk = (A - 3*eye(n))\\wk; lambdak = 3 + 1/(wk\'*zk);`',
+      '`zk = (A + 3*eye(n))\\wk; lambdak = 3 + 1/(wk\'*zk);`',
+    ],
+    correct: 2,
+    explanation: 'The inverse power method shifted by $p=3$ solves $(A - 3I)z_k = w_k$, giving `zk = (A - 3*eye(n))\\wk`. The eigenvalue approximation is $\\lambda_k = p + 1/(w_k^T z_k)$, so `lambdak = 3 + 1/(wk\'*zk)`.',
+  },
+
+  {
+    id: 1138,
+    isNew: true,
+    topic: 'LU factorization',
+    q: 'Assume the $P$, $L$, $U$ factors of the $PA = LU$ decomposition of a given matrix $A$ are available.\n\nWhich one of the following sets of Matlab commands allows to compute the solution of the linear system $Ax = b$, with a given $b$?',
+    opts: [
+      '`a = L\\b; x = U\\(P*a);`',
+      '`a = U\\(L*b); x = P\\a;`',
+      '`a = U\\(P*b); x = L\\a;`',
+      '`a = L\\(P*b); x = U\\a;`',
+    ],
+    correct: 3,
+    explanation: 'From $PA = LU$, solving $Ax = b$ becomes $LUx = Pb$. First solve $La = Pb$: `a = L\\(P*b)`, then solve $Ux = a$: `x = U\\a`.',
+  },
+
+  {
+    id: 1139,
+    isNew: true,
+    topic: 'Polynomial interpolation',
+    q: 'We want to approximate the function $f(x) = e^x$ on the interval $[-1, 1]$ with the corresponding interpolating polynomial $p$ of maximum degree **8** on equispaced nodes, and we want to estimate the interpolation error, by computing the infinite norm of the difference between $f$ and $p$ in **100** equispaced nodes in $[-1, 1]$. The correct sequence of MATLAB instructions is:',
+    opts: [
+      '```\nf=@(s) exp(s);\nx=linspace(-1,1,8);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
+      '```\nf=@(s) exp(s);\nx=linspace(-1,1,8);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
+      '```\nf=@(s) exp(s);\nx=linspace(-1,1,9);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
+      '```\nf=@(s) exp(s);\nx=linspace(-1,1,9);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
+    ],
+    correct: 2,
+    explanation: 'Degree 8 needs **9 nodes**: `linspace(-1,1,9)`. Error must be computed on the fine grid `xx` with `yy=f(xx)` and `err=norm(p-yy,inf)`.',
+  },
+
+  {
+    id: 1140,
+    isNew: true,
+    topic: 'SVD',
+    q: 'Given a matrix $A \\in R^{m,n}$, with $m \\neq n$, and its decomposition $U^T A V = S$, say which of the following statements is true:',
+    opts: [
+      '$U$ and $V$ are uniquely determined',
+      '$S$ is square',
+      '$U$ and $V$ are orthogonal',
+      '$S$ is square and diagonal',
+    ],
+    correct: 2,
+    explanation: 'In the SVD, $U$ and $V$ are orthogonal matrices by definition. Since $m \\neq n$, $S$ is not square — it is rectangular with singular values on the main diagonal. $U$ and $V$ are not unique.',
+  },
+
+  {
+    id: 1141,
+    isNew: true,
+    topic: 'Choleski factorization',
+    q: 'We are given a matrix $A \\in R^{n,n}$, symmetric and positive definite, and its Choleski factorization $A = R^T R$. Which one of the following statements is surely correct?',
+    opts: [
+      '$R$ is an upper triangular matrix with nonnegative elements on the main diagonal',
+      '$R^T$ is a lower triangular matrix with positive elements on the main diagonal',
+      '$R^T$ is a lower triangular matrix with nonnegative elements on the main diagonal',
+      '$R$ is a lower triangular matrix with positive elements on the main diagonal',
+    ],
+    correct: 1,
+    explanation: 'In the Choleski factorization $A = R^T R$, $R$ is upper triangular with **positive** diagonal elements (since $A$ is positive definite). Therefore $R^T$ is lower triangular with positive elements on the main diagonal.',
+  },
+  {
+  id: 1142,
+  isNew: true,
+  topic: 'Cholesky Decomposition',
+
+  q: 'We are given a matrix $A \\in R^{n,n}$, symmetric and positive definite, and its Choleski factorization $A = R^T R$. Which one of the following statements is surely correct?',
+
+  opts: [
+    'The computational cost of the factorization is essentially $n^3/3$',
+    'The computational cost of the factorization is essentially $n^3$',
+    'The computational cost of the factorization is essentially $n^3/6$',
+    'The computational cost of the factorization is essentially $2n^3/3$',
+  ],
+
+  correct: 2,
+
+  explanation: 'The computational cost of the factorization is essentially $n^3/6$.',
+},
+{
+  id: 1143,
+  isNew: true,
+  topic: 'Lagrange Interpolation',
+
+  q: 'The following points in the plane with coordinates $(0,2)$, $(1,-2)$, $(2,1/2)$, $(1/2,1)$ are given.\n\nIn the Lagrange representation of the polynomial $p_3(x)$ interpolating the above points, which of the following expression denotes the Lagrange fundamental polynomial $\\ell_3(x)$ associated to the abscissa of the third point?',
+
+  opts: [
+    '$\\ell_3(x)=\\dfrac{(x-0)(x-1)(x-1/2)}{(2+0)(2+1)(2+1/2)}$',
+    '$\\ell_3(x)=\\dfrac{(x+0)(x+1)(x+1/2)}{(2-0)(2-1)(2-1/2)}$',
+    '$\\ell_3(x)=\\dfrac{(x-0)(x-1)(x-1/2)}{(2-0)(2-1)(2-1/2)}$',
+    '$\\ell_3(x)=\\dfrac{(x-0)(x-2)(x-1/2)}{(2-0)(2-1)(2-1/2)}$',
+  ],
+
+  correct: 2,
+
+  explanation: '$\\ell_3(x)=\\dfrac{(x-0)(x-1)(x-1/2)}{(2-0)(2-1)(2-1/2)}$.',
+},
+{
+  id: 1144,
+  isNew: true,
+  topic: 'Eigenvalues',
+
+  q: 'Which of the following MATLAB instructions calculates the spectral radius $\\rho$ of a square matrix $A$?',
+
+  opts: [
+    'max(eig(A))',
+    'max(abs(eig(A)))',
+    'min(abs(eig(A)))',
+    'min(eig(A))',
+  ],
+
+  correct: 1,
+
+  explanation: 'The spectral radius is $\\rho(A)=\\max |\\lambda_i|$, therefore the correct MATLAB instruction is `max(abs(eig(A)))`.',
+},
+
 ];
 
