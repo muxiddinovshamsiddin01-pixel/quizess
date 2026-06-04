@@ -123,6 +123,25 @@
   </div>
 </div>
 
+<!-- ══ Exit Quiz Confirm Modal ══ -->
+<div class="fb-modal-wrap" id="exitConfirmModal" style="display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeExitModal()">
+  <div class="fb-modal" style="max-width:380px;padding:32px 28px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:12px;">⚠️</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text1)">Завершить квиз?</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:24px;line-height:1.5">
+      Прогресс будет сохранён, и ты сможешь продолжить позже из раздела «Нерешённые вопросы».
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button onclick="closeExitModal()" class="done-btn done-btn--ghost" style="flex:1">
+        Продолжить
+      </button>
+      <button onclick="confirmExit()" class="done-btn done-btn--danger" style="flex:1">
+        Завершить
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal explanation -->
 <div class="fb-modal-wrap" id="fbModalWrap" onclick="if(event.target===this)closeHintPanel()">
   <div class="fb-modal" id="fbModal">
@@ -186,6 +205,7 @@
 <script src="js/physics_questions.js"></script>
 <script src="js/linalg2_questions.js"></script>
 <script src="js/drawing_questions.js"></script>
+<script src="js/fundamental_questions.js"></script>
 <script src="js/api.js"></script>
 
 <script>
@@ -202,6 +222,8 @@ window._quizInitialized = false;
     window.QUESTIONS_DATA = (typeof MA2_QUESTIONS !== 'undefined') ? MA2_QUESTIONS : [];
   } else if (subject === 'drawing') {
     window.QUESTIONS_DATA = window.DRAWING_QUESTIONS || [];
+  } else if (subject === 'fundamental') {
+    window.QUESTIONS_DATA = window.FUNDAMENTAL_QUESTIONS || [];
   }
   // physics: QUESTIONS_DATA already set by physics_questions.js
 })();

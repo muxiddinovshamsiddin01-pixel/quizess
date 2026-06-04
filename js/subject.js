@@ -8,7 +8,7 @@ let selectedMode = 'all';
 let selectedCount = 20;
 
 // Subjects that have questions ready
-const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing'];
+const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental'];
 
 document.addEventListener('DOMContentLoaded', () => {
   subjectId   = new URLSearchParams(location.search).get('s') || 'physics';
@@ -24,9 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTopics();
   renderHistory();
   renderModes();
-
-  // Браузер вопросов — только для физики
-  if (subjectId === 'physics') renderQuestionBrowser();
+  renderQuestionBrowser();
 });
 
 // ── Header ──────────────────────────────────────────────────
@@ -93,6 +91,7 @@ function renderTopics() {
     if (subjectId === 'physics')      return TOPIC_IDS[slug] || [];
     if (subjectId === 'mathanalysis') return MA2_TOPIC_IDS[slug] || [];
     if (subjectId === 'linalg')       return LA2_TOPIC_IDS[slug] || [];
+    if (subjectId === 'fundamental')  return FUNDAMENTAL_TOPIC_IDS[slug] || [];
     return [];
   };
 
@@ -193,10 +192,17 @@ function renderModes() {
     renderLA2Modes(grid, mistakes);
   } else if (subjectId === 'drawing') {
     renderDrawingModes(grid, mistakes);
+  } else if (subjectId === 'fundamental') {
+    renderFundamentalModes(grid, mistakes);
   }
 }
 
 function renderPhysicsModes(grid, mistakes) {
+  const all = window.QUESTIONS_DATA || [];
+  const correctIds = new Set(S.get('correct_ids', 'physics') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'physics') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
+
   grid.innerHTML = `
     <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
       <span class="mode-badge">194</span>
@@ -214,6 +220,14 @@ function renderPhysicsModes(grid, mistakes) {
       </div>
       <div class="mode-name">Только ошибки</div>
       <div class="mode-desc">Повтори слабые места</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Нерешённые</div>
+      <div class="mode-desc">Продолжи с того места</div>
     </div>
     <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
       <span class="mode-badge" id="cntRandom">20</span>
@@ -255,6 +269,10 @@ function renderMA2Modes(grid, mistakes) {
   const exam2026 = MA2_QUESTIONS.filter(q => q.exam === '22.01.2026').length;
   const exam2025 = MA2_QUESTIONS.filter(q => q.exam === '23.01.2025').length;
   const exam2025june = MA2_QUESTIONS.filter(q => q.exam === '09.06.2025').length;
+  const all = MA2_QUESTIONS;
+  const correctIds = new Set(S.get('correct_ids', 'mathanalysis') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'mathanalysis') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
   grid.innerHTML = `
     <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
       <span class="mode-badge">${total}</span>
@@ -297,6 +315,14 @@ function renderMA2Modes(grid, mistakes) {
       </div>
       <div class="mode-name">Только ошибки</div>
       <div class="mode-desc">Повтори слабые места</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Нерешённые</div>
+      <div class="mode-desc">Продолжи с того места</div>
     </div>
     <div class="mode-section-label">По темам</div>
     <div class="mode-card" data-mode="integrals" onclick="selectMode(this,'integrals')">
@@ -396,6 +422,9 @@ function confirmResetSubject() {
 function renderLA2Modes(grid, mistakes) {
   const all = window.LA2_QUESTIONS || [];
   const total = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'linalg') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'linalg') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
   grid.innerHTML = `
     <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
       <span class="mode-badge">${total}</span>
@@ -413,6 +442,14 @@ function renderLA2Modes(grid, mistakes) {
       </div>
       <div class="mode-name">Только ошибки</div>
       <div class="mode-desc">Повтори слабые места</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Нерешённые</div>
+      <div class="mode-desc">Продолжи с того места</div>
     </div>
     <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
       <span class="mode-badge" id="cntRandom">10</span>
@@ -501,6 +538,9 @@ function renderLA2Modes(grid, mistakes) {
 function renderDrawingModes(grid, mistakes) {
   const all   = window.DRAWING_QUESTIONS || [];
   const total = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'drawing') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'drawing') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
 
   const threads     = all.filter(q => q.topic === 'Threaded Connections').length;
   const projections = all.filter(q => q.topic === 'Projections').length;
@@ -523,6 +563,14 @@ function renderDrawingModes(grid, mistakes) {
       </div>
       <div class="mode-name">Только ошибки</div>
       <div class="mode-desc">Повтори слабые места</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Нерешённые</div>
+      <div class="mode-desc">Продолжи с того места</div>
     </div>
     <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
       <span class="mode-badge" id="cntRandom">5</span>
@@ -564,25 +612,119 @@ function renderDrawingModes(grid, mistakes) {
 }
 
 
+// ── Fundamental Strength of Materials Mode cards ─────────────
+function renderFundamentalModes(grid, mistakes) {
+  const all   = window.FUNDAMENTAL_QUESTIONS || [];
+  const total = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'fundamental') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'fundamental') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
+
+  const mcq  = all.filter(q => !q.type || q.type !== 'open').length;
+  const open = all.filter(q => q.type === 'open').length;
+
+  grid.innerHTML = `
+    <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
+      <span class="mode-badge">${total}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      </div>
+      <div class="mode-name">Все вопросы</div>
+      <div class="mode-desc">Все ${total} вопросов · MCQ + Open</div>
+    </div>
+    <div class="mode-section-label">Тренировка</div>
+    <div class="mode-card ${mistakes.length === 0 ? 'disabled' : ''}" data-mode="mistakes" onclick="selectMode(this,'mistakes')">
+      <span class="mode-badge">${mistakes.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 7 23 1 17 1"/><path d="M1 11V9a10 10 0 0 1 18.8-4.7L23 7"/><polyline points="1 17 1 23 7 23"/><path d="M23 13v2a10 10 0 0 1-18.8 4.6L1 17"/></svg>
+      </div>
+      <div class="mode-name">Только ошибки</div>
+      <div class="mode-desc">Повтори слабые места</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Нерешённые</div>
+      <div class="mode-desc">Продолжи с того места</div>
+    </div>
+    <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
+      <span class="mode-badge" id="cntRandom">3</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Быстрый раунд</div>
+      <div class="mode-desc">N случайных вопросов</div>
+    </div>
+    <div class="mode-section-label">По темам</div>
+    <div class="mode-card" data-mode="material" onclick="selectMode(this,'material')">
+      <span class="mode-badge">${FUNDAMENTAL_TOPIC_IDS.material.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <div class="mode-name">Material Properties</div>
+      <div class="mode-desc">Homogeneity, Poisson coefficient</div>
+    </div>
+    <div class="mode-card" data-mode="stress" onclick="selectMode(this,'stress')">
+      <span class="mode-badge">${FUNDAMENTAL_TOPIC_IDS.stress.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+      </div>
+      <div class="mode-name">Stress & Strain</div>
+      <div class="mode-desc">Shear stress, normal stress</div>
+    </div>
+    <div class="mode-card" data-mode="structural" onclick="selectMode(this,'structural')">
+      <span class="mode-badge">${FUNDAMENTAL_TOPIC_IDS.structural.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><path d="M3 6l9 6 9-6"/></svg>
+      </div>
+      <div class="mode-name">Structural Analysis</div>
+      <div class="mode-desc">Beam reactions, supports</div>
+    </div>
+    <div class="mode-card" data-mode="internal" onclick="selectMode(this,'internal')">
+      <span class="mode-badge">${FUNDAMENTAL_TOPIC_IDS.internal.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="mode-name">Internal Actions</div>
+      <div class="mode-desc">Bending moment, shear, normal, torque</div>
+    </div>
+    <div class="mode-card" data-mode="safety" onclick="selectMode(this,'safety')">
+      <span class="mode-badge">${FUNDAMENTAL_TOPIC_IDS.safety.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="mode-name">Stress & Safety Factor</div>
+      <div class="mode-desc">Von Mises, safety factor, UTS</div>
+    </div>`;
+  selectedCount = 3;
+}
+
 // ══════════════════════════════════════════════════════════════
 // QUESTION BROWSER — быстрый переход к нужному вопросу по ID
+// Работает для всех предметов
 // ══════════════════════════════════════════════════════════════
+
+function _getQuestionsForSubject(sid) {
+  if (sid === 'physics')      return window.QUESTIONS_DATA || [];
+  if (sid === 'linalg')       return window.LA2_QUESTIONS || [];
+  if (sid === 'mathanalysis') return (typeof MA2_QUESTIONS !== 'undefined') ? MA2_QUESTIONS : [];
+  if (sid === 'drawing')      return window.DRAWING_QUESTIONS || [];
+  if (sid === 'fundamental')  return window.FUNDAMENTAL_QUESTIONS || [];
+  return [];
+}
 
 function renderQuestionBrowser() {
   const container = document.getElementById('questionBrowserWrap');
   if (!container) return;
 
-  const all = window.QUESTIONS_DATA || [];
+  const all = _getQuestionsForSubject(subjectId);
   if (!all.length) { container.style.display = 'none'; return; }
 
-  const correctSet = new Set(
-    S.get('correct_ids', 'physics') || []
-  );
-  const mistakeSet = new Set(
-    S.get('mistakes', 'physics') || []
-  );
+  const correctSet = new Set(S.get('correct_ids', subjectId) || []);
+  const mistakeSet = new Set(S.get('mistakes',    subjectId) || []);
 
-  // Сохраняем в глобал для доступа из фильтров
   window._qbAll      = all;
   window._qbCorrect  = correctSet;
   window._qbMistakes = mistakeSet;
@@ -699,5 +841,5 @@ function filterQByStatus(btn, status) {
 }
 
 function goToQuestion(id) {
-  window.location.href = `quiz.html?mode=all&noShuffle=1&startAt=${id}&subject=physics`;
+  window.location.href = `quiz.html?mode=all&noShuffle=1&startAt=${id}&subject=${subjectId}`;
 }

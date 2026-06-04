@@ -4114,7 +4114,7 @@ window.QUESTIONS_DATA = [
   q: 'In a region of space, the potential energy is given by:\n\n$$U(x,y,z)=b(x^2+y^2+z^2)-bxy+c$$\n\nwhere $b$ and $c$ are constants. What is the analytical expression of the force $\\vec{F}(x,y,z)$?',
 
   opts: [
-    '$\\vec{F}(x,y,z)=b(-2x+y)\\hat{i}+b(-2y+x)\\hat{j}-2bz\\hat{k}$',
+    '$\\vec{F}(x,y,z)=b(-2x+xy)\\hat{i}+b(-2y+xy)\\hat{j}-2bz\\hat{k}$',
     '$\\vec{F}(x,y,z)=b(2x-y)\\hat{i}+b(2y-x)\\hat{j}+(2bz+c)\\hat{k}$',
     '$\\vec{F}(x,y,z)=b(2x-y)\\hat{i}+b(2y-x)\\hat{j}+2bz\\hat{k}$',
     '$\\vec{F}(x,y,z)=b(-2x+y)\\hat{i}+b(-2y+x)\\hat{j}-2bz\\hat{k}$',

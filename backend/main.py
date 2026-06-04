@@ -228,7 +228,8 @@ def calc_points(pct: int, total: int, time_seconds: int) -> int:
     base  = round(pct * total * 0.5)
     bonus = 50 if pct == 100 else (25 if pct >= 90 else (10 if pct >= 75 else 0))
     speed = max(0, 30 - time_seconds // 10) if time_seconds > 0 else 0
-    return max(5, base + bonus + speed)
+    participation = 10  # +10 очков за каждый завершённый квиз
+    return max(10, base + bonus + speed + participation)
 
 # ================================================================
 # ROUTES
@@ -498,20 +499,21 @@ def get_achievements(username: str):
 # ---- Leaderboard -----------------------------------------------
 
 @app.get("/api/leaderboard")
-def get_leaderboard(limit: int = 30):
+def get_leaderboard(limit: int = 50):
     with db() as cur:
+        # Show ALL registered users, even those with 0 points
         cur.execute("""
             SELECT
                 u.username, u.display_name, u.avatar_color,
-                u.total_points, u.streak_current,
-                COUNT(r.id)         AS total_quizzes,
-                ROUND(AVG(r.pct),1) AS avg_pct,
-                COUNT(a.id)         AS achievements_count
+                u.total_points, u.streak_current, u.streak_best,
+                COUNT(DISTINCT r.id)         AS total_quizzes,
+                ROUND(AVG(r.pct),1)          AS avg_pct,
+                COUNT(DISTINCT a.id)         AS achievements_count
             FROM sq_users u
             LEFT JOIN sq_results      r ON r.username = u.username
             LEFT JOIN sq_achievements a ON a.username = u.username
             GROUP BY u.username
-            ORDER BY u.total_points DESC
+            ORDER BY u.total_points DESC, total_quizzes DESC, u.created_at ASC
             LIMIT ?
         """, (limit,))
         rows = cur.fetchall()

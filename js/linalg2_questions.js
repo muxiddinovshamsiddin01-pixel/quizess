@@ -1085,20 +1085,54 @@ window.LA2_QUESTIONS = [
     correct: 2,
     explanation: 'The spline of order 1 is piecewise linear. On the **first** sub-interval $[x_1,x_2]$ the step size is $h=(b-a)/n$, so the slope is $\\frac{y_2-y_1}{h}=\\frac{n(y_2-y_1)}{b-a}$. This is $S_1\'(a)$.',
   },
-  {
-    id: 1072,
-    topic: 'matrices',
-    q: 'Let the matrix $A \\in \\mathbb{R}^{m,n}$ and the column vector $\\mathbf{x} \\in \\mathbb{R}^n$ be given. Let $\\mathbf{y} = A\\mathbf{x}$. Which MATLAB instruction computes $y_5$, the **5th component** of $\\mathbf{y}$?',
-    opts: [
-      '`y_5 = A(5,:)*x(5)`',
-      '`y_5 = A.*x(5)`',
-      '`y_5 = A(5,:)*x`',
-      '`y_5 = A(5,:).*x`',
-    ],
-    correct: 2,
-    explanation: '$y_5 = (A\\mathbf{x})_5 = \\sum_j A_{5j} x_j$ = (5th row of A) · x. In MATLAB: `A(5,:)` is the 5th row (a $1\\times n$ vector), `x` is $n\\times 1$, so `A(5,:)*x` is standard matrix multiplication giving a scalar.',
-  },
-  {
+{
+  id: 1072,
+  topic: 'matrices',
+
+  q: 'Let the matrix $A \\in \\mathbb{R}^{m,n}$ and the column vector $\\mathbf{x} \\in \\mathbb{R}^n$ be given. Let $\\mathbf{y} = A\\mathbf{x}$. Which MATLAB instruction computes $y_5$, the **5th component** of $\\mathbf{y}$?',
+  opts: [
+    '`y_5 = A(5,:)*x(5)`',
+    '`y_5 = A.*x(5)`',
+    '`y_5 = A(5,:)*x`',
+    '`y_5 = A(5,:).*x`',
+  ],
+
+  correct: 2,
+
+  explanation:
+  '**Step 1 — Definition of matrix-vector product**\n\n' +
+
+  'By definition, the $i$-th component of $\\mathbf{y} = A\\mathbf{x}$ is:\n\n' +
+
+  '$$y_i = \\sum_{j=1}^{n} A_{ij}\\, x_j$$\n\n' +
+
+  'So for $i=5$:\n\n' +
+
+  '$$y_5 = \\sum_{j=1}^{n} A_{5j}\\, x_j$$\n\n' +
+
+  '**Step 2 — Interpret as a dot product**\n\n' +
+
+  'This is exactly the dot product of the **5th row** of $A$ with the vector $\\mathbf{x}$:\n\n' +
+
+  '$$y_5 = \\underbrace{A(5,:)}_{1\\times n} \\cdot \\underbrace{\\mathbf{x}}_{n\\times 1}$$\n\n' +
+
+  '**Step 3 — Eliminate wrong options**\n\n' +
+
+  '- `A(5,:)*x(5)` — multiplies the 5th row by a **scalar** $x_5$ only, not the full vector.\n\n' +
+
+  '- `A.*x(5)` — element-wise multiplication of the **entire matrix** $A$ by $x_5$.\n\n' +
+
+  '- `A(5,:).*x` — element-wise `.*` between a $1\\times n$ row and $n\\times 1$ column; gives a $1\\times n$ array, **not a scalar**.\n\n' +
+
+  '**Step 4 — Correct MATLAB instruction**\n\n' +
+
+  '`A(5,:)` extracts the 5th row as a $1\\times n$ vector; `x` is $n\\times 1$. Standard matrix multiplication `*` then yields a scalar:\n\n' +
+
+  '`y_5 = A(5,:)*x`\n\n' +
+
+  'Final Answer: **(C)**',
+},
+ {
   id: 1073,
   topic: 'Matrices',
 
@@ -1114,23 +1148,25 @@ window.LA2_QUESTIONS = [
   correct: 3,
 
   explanation:
-  'By definition of matrix-vector multiplication:\n\n' +
+    'By definition of matrix-vector multiplication, the $k$-th component of $\\mathbf{y} = A\\mathbf{x}$ is:\n\n' +
 
-  '$$y_2 = \\sum_j A_{2j}\\, x_j$$\n\n' +
+    '$$y_k = \\sum_{j=1}^{n} A_{kj}\\, x_j$$\n\n' +
 
-  'This is the **dot product of the 2nd row of $A$** with the full vector $\\mathbf{x}$.\n\n' +
+    'So $y_2$ is the **dot product of the 2nd row of $A$** with the entire vector $\\mathbf{x}$:\n\n' +
 
-  'In MATLAB: `A(2,:)*x` — the 2nd row times the full vector **x**.\n\n' +
+    '$$y_2 = A_{2,1}\\,x_1 + A_{2,2}\\,x_2 + \\cdots + A_{2,n}\\,x_n = A(2,:) \\cdot \\mathbf{x}$$\n\n' +
 
-  '**Why the others fail:**\n\n' +
+    'In MATLAB this is written as `A(2,:)*x` — row 2 multiplied by the full column vector.\n\n' +
 
-  '- **(A)** `A(2,:)*x(2)` — multiplies the row by a scalar $x_2$ only, not the full vector.\n\n' +
+    '**Why the other options are wrong:**\n\n' +
 
-  '- **(B)** `A.*x(2)` — element-wise scaling of the whole matrix, wrong shape.\n\n' +
+    '**A)** `A(2,:)*x(2)` — takes only the scalar $x_2$, not the full vector. Result is $\\mathbf{a}_{2}^T \\cdot x_2$, which is wrong.\n\n' +
 
-  '- **(C)** `A(2,:).*x` — element-wise product, not a dot product (returns a row, not a scalar).\n\n' +
+    '**B)** `A.*x(2)` — element-wise multiplication of the **entire matrix** by the scalar $x_2$. Completely wrong shape.\n\n' +
 
-  'Final Answer: **(D)**',
+    '**C)** `A(2,:).*x` — element-wise product `.*` returns a **row vector**, not a scalar. Not a dot product.\n\n' +
+
+    '**D)** `A(2,:)*x` ✓ — standard matrix multiplication of a $[1 \\times n]$ row by a $[n \\times 1]$ column gives a scalar. **Correct.**',
 },
  {
   id: 1074,
