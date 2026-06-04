@@ -459,6 +459,15 @@ function renderLA2Modes(grid, mistakes) {
       <div class="mode-name">Быстрый раунд</div>
       <div class="mode-desc">N случайных вопросов</div>
     </div>
+    ${(() => { const newQs = all.filter(q => q.isNew); return newQs.length > 0 ? `
+    <div class="mode-card" data-mode="new_questions" onclick="selectMode(this,'new_questions')" style="border-color:var(--am)44">
+      <span class="mode-badge" style="background:var(--am)22;color:var(--am)">${newQs.length} 🆕</span>
+      <div class="mode-icon-wrap" style="color:var(--am)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--am)">Новые вопросы 🆕</div>
+      <div class="mode-desc">${newQs.length} свежих вопросов</div>
+    </div>` : ''; })()}
     <div class="mode-section-label">По темам</div>
     <div class="mode-card" data-mode="svd" onclick="selectMode(this,'svd')">
       <span class="mode-badge">${LA2_TOPIC_IDS.svd.length}</span>

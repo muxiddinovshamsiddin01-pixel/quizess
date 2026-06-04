@@ -386,8 +386,9 @@ function buildQuestions() {
     else                                pool = [...all];
   } else if (qParams.subject === 'linalg') {
     const topicIds = LA2_TOPIC_IDS[mode];
-    if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
-    else          pool = [...all];
+    if      (mode === 'new_questions') pool = all.filter(q => q.isNew);
+    else if (topicIds)                 pool = all.filter(q => topicIds.includes(q.id));
+    else                               pool = [...all];
   } else if (qParams.subject === 'fundamental') {
     const topicIds = FUNDAMENTAL_TOPIC_IDS[mode];
     if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
