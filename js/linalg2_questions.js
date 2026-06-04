@@ -2122,19 +2122,23 @@ window.LA2_QUESTIONS = [
   },
 
   {
-    id: 1139,
-    isNew: true,
-    topic: 'Polynomial interpolation',
-    q: 'We want to approximate the function $f(x) = e^x$ on the interval $[-1, 1]$ with the corresponding interpolating polynomial $p$ of maximum degree **8** on equispaced nodes, and we want to estimate the interpolation error, by computing the infinite norm of the difference between $f$ and $p$ in **100** equispaced nodes in $[-1, 1]$. The correct sequence of MATLAB instructions is:',
-    opts: [
-      '```\nf=@(s) exp(s);\nx=linspace(-1,1,8);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
-      '```\nf=@(s) exp(s);\nx=linspace(-1,1,8);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
-      '```\nf=@(s) exp(s);\nx=linspace(-1,1,9);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
-      '```\nf=@(s) exp(s);\nx=linspace(-1,1,9);\ny=f(x);\nxx=linspace(-1,1,100);\nyy=f(xx);\nc=polyfit(x,y,8);\np=polyval(c,xx);\nerr=norm(p-yy,inf);```',
-    ],
-    correct: 2,
-    explanation: 'Degree 8 needs **9 nodes**: `linspace(-1,1,9)`. Error must be computed on the fine grid `xx` with `yy=f(xx)` and `err=norm(p-yy,inf)`.',
-  },
+  id: 1139,
+  isNew: true,
+  topic: 'Eigenvalues',
+
+  q: 'Which of the following MATLAB instructions calculates the spectral radius $\\rho$ of a square matrix $A$?',
+
+  opts: [
+    'max(eig(A))',
+    'max(abs(eig(A)))',
+    'min(abs(eig(A)))',
+    'min(eig(A))',
+  ],
+
+  correct: 1,
+
+  explanation: 'The spectral radius is $\\rho(A)=\\max |\\lambda_i|$, therefore the correct MATLAB instruction is `max(abs(eig(A)))`.',
+},
 
   {
     id: 1140,
@@ -2201,24 +2205,7 @@ window.LA2_QUESTIONS = [
 
   explanation: '$\\ell_3(x)=\\dfrac{(x-0)(x-1)(x-1/2)}{(2-0)(2-1)(2-1/2)}$.',
 },
-{
-  id: 1144,
-  isNew: true,
-  topic: 'Eigenvalues',
 
-  q: 'Which of the following MATLAB instructions calculates the spectral radius $\\rho$ of a square matrix $A$?',
-
-  opts: [
-    'max(eig(A))',
-    'max(abs(eig(A)))',
-    'min(abs(eig(A)))',
-    'min(eig(A))',
-  ],
-
-  correct: 1,
-
-  explanation: 'The spectral radius is $\\rho(A)=\\max |\\lambda_i|$, therefore the correct MATLAB instruction is `max(abs(eig(A)))`.',
-},
 
 ];
 
