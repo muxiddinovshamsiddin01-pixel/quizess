@@ -210,6 +210,7 @@
 <script src="js/storage.js"></script>
 <script src="js/physics_questions.js"></script>
 <script src="js/linalg2_questions.js"></script>
+<script src="js/mathanalysis_questions.js"></script>
 <script src="js/drawing_questions.js"></script>
 <script src="js/fundamental_questions.js"></script>
 <script src="js/api.js"></script>
@@ -225,7 +226,7 @@ window._quizInitialized = false;
   if (subject === 'linalg') {
     window.QUESTIONS_DATA = window.LA2_QUESTIONS || [];
   } else if (subject === 'mathanalysis') {
-    window.QUESTIONS_DATA = (typeof MA2_QUESTIONS !== 'undefined') ? MA2_QUESTIONS : [];
+    window.QUESTIONS_DATA = window.MA2_QUESTIONS || [];
   } else if (subject === 'drawing') {
     window.QUESTIONS_DATA = window.DRAWING_QUESTIONS || [];
   } else if (subject === 'fundamental') {

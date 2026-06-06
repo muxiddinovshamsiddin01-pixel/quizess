@@ -147,7 +147,7 @@ function renderHistory() {
     qr:'QR Decomposition', interpolation:'Interpolation & Splines',
     matrices:'Matrix Properties',
     exam_2026:'Exam 2026', exam_2025:'Exam 2025',
-    exam_2025_june:'Exam Jun 2025',
+    exam_2025_june:'Exam Jun 2025', exam_2014_2022:'Exam 2014–2022',
   };
 
   el.innerHTML = results.map((r, i) => {
@@ -265,11 +265,13 @@ function renderPhysicsModes(grid, mistakes) {
 }
 
 function renderMA2Modes(grid, mistakes) {
-  const total = MA2_QUESTIONS.length;
-  const exam2026 = MA2_QUESTIONS.filter(q => q.exam === '22.01.2026').length;
-  const exam2025 = MA2_QUESTIONS.filter(q => q.exam === '23.01.2025').length;
-  const exam2025june = MA2_QUESTIONS.filter(q => q.exam === '09.06.2025').length;
-  const all = MA2_QUESTIONS;
+  const all = window.MA2_QUESTIONS || [];
+  const total = all.length;
+  const exam2026 = all.filter(q => q.exam === '22.01.2026').length;
+  const exam2025 = all.filter(q => q.exam === '23.01.2025').length;
+  const exam2025june = all.filter(q => q.exam === '09.06.2025').length;
+  const exam2014_2022 = all.filter(q => q.exam === '2014-2022').length;
+  const exam2022_2024 = all.filter(q => q.exam === '2022-2024').length;
   const correctIds = new Set(S.get('correct_ids', 'mathanalysis') || []);
   const mistakeSet = new Set(S.get('mistakes', 'mathanalysis') || []);
   const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
@@ -306,6 +308,22 @@ function renderMA2Modes(grid, mistakes) {
       </div>
       <div class="mode-name">Exam 09.06.2025</div>
       <div class="mode-desc">${exam2025june} questions</div>
+    </div>
+    <div class="mode-card ${exam2014_2022 === 0 ? 'disabled' : ''}" data-mode="exam_2014_2022" onclick="selectMode(this,'exam_2014_2022')">
+      <span class="mode-badge">${exam2014_2022}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="mode-name">Exam 2014–2022</div>
+      <div class="mode-desc">${exam2014_2022 > 0 ? exam2014_2022 + ' questions' : 'Coming soon · questions in progress'}</div>
+    </div>
+    <div class="mode-card ${exam2022_2024 === 0 ? 'disabled' : ''}" data-mode="exam_2022_2024" onclick="selectMode(this,'exam_2022_2024')">
+      <span class="mode-badge">${exam2022_2024}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="mode-name">Exam 2022–2024</div>
+      <div class="mode-desc">${exam2022_2024 > 0 ? exam2022_2024 + ' questions' : 'Coming soon · questions in progress'}</div>
     </div>
     <div class="mode-section-label">Practice</div>
     <div class="mode-card ${mistakes.length === 0 ? 'disabled' : ''}" data-mode="mistakes" onclick="selectMode(this,'mistakes')">
@@ -718,7 +736,7 @@ function renderFundamentalModes(grid, mistakes) {
 function _getQuestionsForSubject(sid) {
   if (sid === 'physics')      return window.QUESTIONS_DATA || [];
   if (sid === 'linalg')       return window.LA2_QUESTIONS || [];
-  if (sid === 'mathanalysis') return (typeof MA2_QUESTIONS !== 'undefined') ? MA2_QUESTIONS : [];
+  if (sid === 'mathanalysis') return window.MA2_QUESTIONS || [];
   if (sid === 'drawing')      return window.DRAWING_QUESTIONS || [];
   if (sid === 'fundamental')  return window.FUNDAMENTAL_QUESTIONS || [];
   return [];

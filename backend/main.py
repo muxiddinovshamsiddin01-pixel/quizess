@@ -9,10 +9,10 @@ from typing import Optional
 
 import httpx
 import asyncio
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -71,9 +71,43 @@ app.add_middleware(
 )
 
 # ── Раздача фронтенда ────────────────────────────────────────────
-app.mount("/css",    StaticFiles(directory=os.path.join(_FRONT_DIR, "css")),    name="css")
-app.mount("/js",     StaticFiles(directory=os.path.join(_FRONT_DIR, "js")),     name="js")
-app.mount("/images", StaticFiles(directory=os.path.join(_FRONT_DIR, "images")), name="images")
+# JS/CSS/images отдаём с no-store чтобы браузер не кэшировал старые версии
+
+_MIME = {
+    '.js':   'application/javascript',
+    '.css':  'text/css',
+    '.png':  'image/png',
+    '.jpg':  'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif':  'image/gif',
+    '.svg':  'image/svg+xml',
+    '.webp': 'image/webp',
+    '.ico':  'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2':'font/woff2',
+}
+
+def _no_cache_file(path: str):
+    if not os.path.isfile(path):
+        raise HTTPException(404, "File not found")
+    ext  = os.path.splitext(path)[1].lower()
+    mime = _MIME.get(ext, 'application/octet-stream')
+    with open(path, 'rb') as f:
+        content = f.read()
+    return Response(content, media_type=mime,
+                    headers={"Cache-Control": "no-store, no-cache, must-revalidate"})
+
+@app.get("/js/{file_path:path}", include_in_schema=False)
+def serve_js(file_path: str):
+    return _no_cache_file(os.path.join(_FRONT_DIR, "js", file_path))
+
+@app.get("/css/{file_path:path}", include_in_schema=False)
+def serve_css(file_path: str):
+    return _no_cache_file(os.path.join(_FRONT_DIR, "css", file_path))
+
+@app.get("/images/{file_path:path}", include_in_schema=False)
+def serve_images(file_path: str):
+    return _no_cache_file(os.path.join(_FRONT_DIR, "images", file_path))
 
 @app.get("/", include_in_schema=False)
 def serve_login():

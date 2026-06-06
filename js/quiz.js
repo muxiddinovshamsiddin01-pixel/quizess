@@ -387,6 +387,8 @@ function buildQuestions() {
     if      (mode === 'exam_2026')      pool = all.filter(q => q.exam === '22.01.2026');
     else if (mode === 'exam_2025')      pool = all.filter(q => q.exam === '23.01.2025');
     else if (mode === 'exam_2025_june') pool = all.filter(q => q.exam === '09.06.2025');
+    else if (mode === 'exam_2014_2022') pool = all.filter(q => q.exam === '2014-2022');
+    else if (mode === 'exam_2022_2024') pool = all.filter(q => q.exam === '2022-2024');
     else if (topicIds)                  pool = all.filter(q => topicIds.includes(q.id));
     else                                pool = [...all];
   } else if (qParams.subject === 'linalg') {
@@ -600,7 +602,7 @@ function renderQuestion() {
       <div class="q-meta">
         <span class="q-num">Q${q.id}</span>
         <span class="q-topic">${topicName}</span>
-        ${q.exam ? `<span class="q-exam" style="margin-left:auto;font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px;">📅 ${q.exam}</span>` : ''}
+        ${q.exam ? `<span class="q-exam-badge"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${q.exam}</span>` : ''}
       </div>
       <div class="q-text">${renderText(qText(q))}</div>
       <button class="hint-btn" id="hintBtn" onclick="openHintPanel()">
