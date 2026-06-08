@@ -26,8 +26,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 # Self-ping URL: set RENDER_EXTERNAL_URL in Render environment variables
 # e.g. https://your-app-name.onrender.com
 RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "")
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme123")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "shamsiddin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "quizadmin2026")
 
 # Resolve SQLite file path relative to this script
 _sqlite_path = DATABASE_URL.replace("sqlite:///", "")
