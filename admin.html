@@ -348,6 +348,25 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
   .main-content { padding: 20px 16px; }
   .top-bar { padding: 14px 16px; }
 }
+
+/* Online pill */
+.online-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(34,211,160,.08); border: 1px solid rgba(34,211,160,.2);
+  border-radius: 999px; padding: 6px 14px;
+  font-size: 13px; color: var(--tx);
+}
+.online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gr);
+  box-shadow: 0 0 6px var(--gr); animation: blink 2s ease-in-out infinite; }
+.online-ago { font-size: 11px; color: var(--tx2); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.btn-sm-refresh {
+  background: var(--card); border: 1px solid var(--border2); color: var(--tx2);
+  border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+  transition: all .15s;
+}
+.btn-sm-refresh:hover { color: var(--tx); border-color: var(--acc); }
 </style>
 </head>
 <body>
@@ -390,6 +409,20 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       <div class="stat-card"><div class="stat-label">Total Quizzes</div><div class="stat-val" id="sTotalQuizzes">—</div><div class="stat-sub">sessions played</div></div>
       <div class="stat-card"><div class="stat-label">Active Today</div><div class="stat-val" id="sActiveToday">—</div><div class="stat-sub">played today</div></div>
       <div class="stat-card"><div class="stat-label">New This Week</div><div class="stat-val" id="sNewWeek">—</div><div class="stat-sub">new registrations</div></div>
+      <div class="stat-card" style="border-color:rgba(34,211,160,.25)">
+        <div class="stat-label" style="color:var(--gr)">🟢 Online Now</div>
+        <div class="stat-val" id="sOnlineNow" style="color:var(--gr)">—</div>
+        <div class="stat-sub">active in last 2 min</div>
+      </div>
+    </div>
+
+    <!-- Online users list -->
+    <div class="section-header" style="margin-top:8px">
+      <div class="section-title">🟢 Who's Online <span id="onlineCount" style="font-size:13px;color:var(--tx2);font-weight:400"></span></div>
+      <button class="btn-sm-refresh" onclick="loadStats()">↻ Refresh</button>
+    </div>
+    <div id="onlineList" style="display:flex;flex-wrap:wrap;gap:8px;padding:0 0 24px;min-height:48px">
+      <div style="color:var(--tx3);font-size:13px;padding:8px">Loading...</div>
     </div>
 
     <!-- Users -->
@@ -465,6 +498,8 @@ function showPanel() {
   document.getElementById('adminPanel').style.display = 'block';
   loadStats();
   loadUsers();
+  // Auto-refresh online list every 30s
+  setInterval(loadStats, 30000);
 }
 
 async function loadStats() {
@@ -472,10 +507,41 @@ async function loadStats() {
     const r = await fetch('/api/admin/stats', { headers: { 'X-Admin-Token': _token } });
     if (!r.ok) return;
     const d = await r.json();
-    document.getElementById('sTotalUsers').textContent = d.total_users;
+    document.getElementById('sTotalUsers').textContent  = d.total_users;
     document.getElementById('sTotalQuizzes').textContent = d.total_quizzes;
     document.getElementById('sActiveToday').textContent = d.active_today;
-    document.getElementById('sNewWeek').textContent = d.new_this_week;
+    document.getElementById('sNewWeek').textContent     = d.new_this_week;
+    document.getElementById('sOnlineNow').textContent   = d.online_now || 0;
+
+    // Render online list
+    const list = document.getElementById('onlineList');
+    const countEl = document.getElementById('onlineCount');
+    const online = d.online_list || [];
+    countEl.textContent = online.length ? `(${online.length} in last 30 min)` : '';
+    if (!online.length) {
+      list.innerHTML = '<div style="color:var(--tx3);font-size:13px;padding:8px 0">No one online recently</div>';
+      return;
+    }
+    const now = Date.now();
+    list.innerHTML = online.map(u => {
+      const color    = u.avatar_color || '#7c6af7';
+      const initial  = (u.display_name || u.username)[0].toUpperCase();
+      const seenMs   = new Date(u.last_seen + (u.last_seen.endsWith('Z') ? '' : 'Z')).getTime();
+      const diffSec  = Math.floor((now - seenMs) / 1000);
+      const isNow    = diffSec < 120;
+      let agoText;
+      if (diffSec < 10)       agoText = 'just now';
+      else if (diffSec < 60)  agoText = diffSec + 's ago';
+      else if (diffSec < 3600) agoText = Math.floor(diffSec/60) + ' min ago';
+      else                    agoText = Math.floor(diffSec/3600) + 'h ago';
+      const pageLabel = u.page ? u.page.replace('.html','') : '';
+      return `<div class="online-pill" title="${esc(u.username)} — ${esc(u.page||'')}">
+        <div class="online-dot" style="${isNow ? '' : 'background:var(--am);box-shadow:none;animation:none'}"></div>
+        <div class="avatar-chip" style="background:${color}22;color:${color};width:22px;height:22px;font-size:11px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700">${initial}</div>
+        <span>${esc(u.display_name || u.username)}</span>
+        <span class="online-ago">${pageLabel ? '· ' + pageLabel + ' · ' : '· '}${agoText}</span>
+      </div>`;
+    }).join('');
   } catch(e) {}
 }
 

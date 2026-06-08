@@ -29,6 +29,10 @@ RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "shamsiddin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "quizadmin2026")
 
+# ── Session version — bump this to force-logout all users once ──
+# After deploy, users with old version get kicked to login page.
+SESSION_VERSION = "v2"
+
 # Resolve SQLite file path relative to this script
 _sqlite_path = DATABASE_URL.replace("sqlite:///", "")
 if _sqlite_path.startswith("./"):
@@ -222,6 +226,15 @@ def init_db():
         cur.execute("CREATE INDEX IF NOT EXISTS idx_sq_results_user ON sq_results(username)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_sq_ach_user ON sq_achievements(username)")
 
+        # Online activity tracking
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS sq_online (
+            username   TEXT PRIMARY KEY REFERENCES sq_users(username),
+            last_seen  TEXT NOT NULL,
+            page       TEXT DEFAULT ''
+        )""")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_sq_online_seen ON sq_online(last_seen)")
+
 
 # ----------------------------------------------------------------
 # Achievements
@@ -277,10 +290,6 @@ def calc_points(pct: int, total: int, time_seconds: int) -> int:
 # ================================================================
 # ROUTES
 # ================================================================
-
-@app.get("/api/ping")
-def ping():
-    return {"status": "ok", "service": "StudyQuiz API"}
 
 
 # ── Auth helpers ─────────────────────────────────────────────────
@@ -371,6 +380,35 @@ def login(body: LoginBody):
         raise HTTPException(401, "Invalid username or password")
     row.pop("password_hash", None)
     return row
+
+
+@app.get("/api/ping")
+def ping():
+    return {"ok": True}
+
+
+@app.get("/api/session-version")
+def get_session_version():
+    """Frontend checks this on load — if version mismatch, forces re-login."""
+    return {"version": SESSION_VERSION}
+
+
+class HeartbeatBody(BaseModel):
+    username: str
+    page: Optional[str] = ""
+
+@app.post("/api/heartbeat")
+def heartbeat(body: HeartbeatBody):
+    """Called every 30s from frontend to track online users."""
+    username = body.username.lower().strip()
+    now = datetime.now(timezone.utc).isoformat()
+    with db() as cur:
+        cur.execute("""
+            INSERT INTO sq_online(username, last_seen, page)
+            VALUES(?, ?, ?)
+            ON CONFLICT(username) DO UPDATE SET last_seen=excluded.last_seen, page=excluded.page
+        """, (username, now, body.page or ""))
+    return {"ok": True}
 
 
 # ---- Users -----------------------------------------------------
@@ -689,17 +727,38 @@ def admin_get_stats(request: Request):
         cur.execute("SELECT COUNT(*) as c FROM sq_users WHERE created_at >= datetime('now', '-7 days')")
         new_this_week = cur.fetchone()["c"]
         cur.execute("SELECT username, display_name, total_points FROM sq_users ORDER BY total_points DESC LIMIT 1")
-        top = _row(cur.fetchone()) if cur.rowcount != 0 else None
-        # fix: re-fetch top user
-        cur.execute("SELECT username, display_name, total_points FROM sq_users ORDER BY total_points DESC LIMIT 1")
         top_row = cur.fetchone()
         top = _row(top_row) if top_row else None
+
+        # Online: seen in last 2 minutes = "online now", last 10 min = "recently"
+        cur.execute("""
+            SELECT o.username, o.last_seen, o.page, u.display_name, u.avatar_color
+            FROM sq_online o
+            JOIN sq_users u ON u.username = o.username
+            WHERE o.last_seen >= datetime('now', '-30 minutes')
+            ORDER BY o.last_seen DESC
+        """)
+        online_rows = [_row(r) for r in cur.fetchall()]
+
+        online_now = sum(1 for r in online_rows
+                         if r["last_seen"] >= (datetime.now(timezone.utc).replace(tzinfo=None)
+                         .isoformat()[:16]))  # within ~2 min
+
+        # simpler: count seen in last 2 min
+        cur.execute("""
+            SELECT COUNT(*) as c FROM sq_online
+            WHERE last_seen >= datetime('now', '-2 minutes')
+        """)
+        online_now = cur.fetchone()["c"]
+
     return {
-        "total_users": total_users,
+        "total_users":   total_users,
         "total_quizzes": total_quizzes,
-        "active_today": active_today,
+        "active_today":  active_today,
         "new_this_week": new_this_week,
-        "top_user": top,
+        "top_user":      top,
+        "online_now":    online_now,
+        "online_list":   online_rows,
     }
 
 @app.delete("/api/admin/users/{username}")

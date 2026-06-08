@@ -13,6 +13,47 @@ const Auth = {
   logout:      () => { Auth.clearUser(); location.href = 'login.html'; },
 };
 
+// ── Session version check — kicks users on new deploy ───────
+const _API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
+
+async function checkSessionVersion() {
+  try {
+    const res = await fetch(_API_BASE + '/api/session-version', { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) return;
+    const { version } = await res.json();
+    const stored = localStorage.getItem('sq_session_version');
+    if (stored && stored !== version) {
+      // New version — force re-login
+      Auth.clearUser();
+      localStorage.setItem('sq_session_version', version);
+      location.href = 'login.html?kicked=1';
+      return;
+    }
+    localStorage.setItem('sq_session_version', version);
+  } catch { /* backend offline — don't kick */ }
+}
+
+// Run version check on every page load
+checkSessionVersion();
+
+// ── Heartbeat — sends "I'm online" ping every 30s ───────────
+function startHeartbeat() {
+  const username = Auth.getUsername();
+  if (!username) return;
+  const page = location.pathname.split('/').pop() || 'dashboard.html';
+  const send = () => fetch(_API_BASE + '/api/heartbeat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, page }),
+    keepalive: true,
+  }).catch(() => {});
+  send(); // immediate first ping
+  return setInterval(send, 30000);
+}
+
+// Start heartbeat if logged in
+if (Auth.isLoggedIn()) startHeartbeat();
+
 // ── Clear legacy pq_* keys (old progress not tied to any user) ──
 function clearLegacyKeys() {
   const toDelete = Object.keys(localStorage).filter(k => k.startsWith('pq_'));
