@@ -17,23 +17,23 @@ const Auth = {
 const _API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
 
 async function checkSessionVersion() {
+  // Only matters if user is logged in
+  if (!Auth.isLoggedIn()) return;
   try {
-    const res = await fetch(_API_BASE + '/api/session-version', { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(_API_BASE + '/api/session-version', { signal: AbortSignal.timeout(6000) });
     if (!res.ok) return;
     const { version } = await res.json();
     const stored = localStorage.getItem('sq_session_version');
-    if (stored && stored !== version) {
-      // New version — force re-login
+    // Kick if: never seen this version before, OR version changed
+    if (stored !== version) {
       Auth.clearUser();
       localStorage.setItem('sq_session_version', version);
       location.href = 'login.html?kicked=1';
-      return;
     }
-    localStorage.setItem('sq_session_version', version);
   } catch { /* backend offline — don't kick */ }
 }
 
-// Run version check on every page load
+// Run version check on every page load (async, won't block page)
 checkSessionVersion();
 
 // ── Heartbeat — sends "I'm online" ping every 30s ───────────

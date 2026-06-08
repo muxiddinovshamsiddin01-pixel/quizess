@@ -31,7 +31,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "quizadmin2026")
 
 # ── Session version — bump this to force-logout all users once ──
 # After deploy, users with old version get kicked to login page.
-SESSION_VERSION = "v2"
+SESSION_VERSION = "v3"
 
 # Resolve SQLite file path relative to this script
 _sqlite_path = DATABASE_URL.replace("sqlite:///", "")
