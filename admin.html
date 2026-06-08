@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — StudyQuiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --card: #111118;
+  --border: rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.12);
+  --tx: #e8e8f0;
+  --tx2: #7a7a9a;
+  --tx3: #4a4a6a;
+  --acc: #7c6af7;
+  --acc2: #a78bfa;
+  --gr: #22d3a0;
+  --re: #f87171;
+  --am: #fbbf24;
+  --bl: #60a5fa;
+}
+
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Login screen ── */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,106,247,.15) 0%, transparent 70%);
+}
+
+.login-box {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 380px;
+  text-align: center;
+}
+
+.login-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: var(--acc2);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.login-sub {
+  font-size: 13px;
+  color: var(--tx2);
+  margin-bottom: 32px;
+}
+
+.input-group {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx2);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  color: var(--tx);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.input-group input:focus { border-color: var(--acc); }
+
+.btn-login {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--acc), #a78bfa);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s;
+}
+
+.btn-login:hover { opacity: .9; transform: translateY(-1px); }
+.btn-login:active { transform: translateY(0); }
+
+.login-err {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--re);
+  min-height: 20px;
+}
+
+/* ── Admin panel ── */
+#adminPanel { display: none; }
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.3);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.top-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--acc2);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.top-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.btn-logout {
+  padding: 8px 18px;
+  background: rgba(248,113,113,.12);
+  border: 1px solid rgba(248,113,113,.3);
+  border-radius: 10px;
+  color: var(--re);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-logout:hover { background: rgba(248,113,113,.2); }
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+}
+
+/* Stats cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 8px;
+}
+
+.stat-val {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--tx2);
+}
+
+/* Users table */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.search-box {
+  padding: 9px 16px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--tx);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  width: 220px;
+  transition: border-color .2s;
+}
+.search-box:focus { border-color: var(--acc); }
+
+.table-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+
+th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tx3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+td {
+  padding: 13px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(255,255,255,.02); }
+
+.avatar-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+}
+
+.user-name { font-weight: 600; }
+.user-uname { font-size: 11px; color: var(--tx2); }
+
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-gr { background: rgba(34,211,160,.12); color: var(--gr); }
+.badge-am { background: rgba(251,191,36,.12);  color: var(--am); }
+.badge-re { background: rgba(248,113,113,.12); color: var(--re); }
+
+.points-val { font-weight: 700; color: var(--acc2); font-family: 'Space Mono', monospace; font-size: 13px; }
+
+.btn-del {
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid rgba(248,113,113,.3);
+  border-radius: 8px;
+  color: var(--re);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-del:hover { background: rgba(248,113,113,.12); }
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--tx2);
+  font-size: 14px;
+}
+
+.dot-anim::after {
+  content: '...';
+  animation: dots 1.2s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%,20%  { content: '.'; }
+  40%     { content: '..'; }
+  60%,100%{ content: '...'; }
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .main-content { padding: 20px 16px; }
+  .top-bar { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">StudyQuiz</div>
+    <h1 class="login-title">Admin Panel</h1>
+    <p class="login-sub">Enter your admin credentials to continue</p>
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="off">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- Admin Panel -->
+<div id="adminPanel">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div>
+        <div class="top-logo">StudyQuiz</div>
+        <div class="top-title">Admin Panel</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Log out</button>
+  </div>
+
+  <div class="main-content">
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-val" id="sTotalUsers">—</div><div class="stat-sub">registered accounts</div></div>
+      <div class="stat-card"><div class="stat-label">Total Quizzes</div><div class="stat-val" id="sTotalQuizzes">—</div><div class="stat-sub">sessions played</div></div>
+      <div class="stat-card"><div class="stat-label">Active Today</div><div class="stat-val" id="sActiveToday">—</div><div class="stat-sub">played today</div></div>
+      <div class="stat-card"><div class="stat-label">New This Week</div><div class="stat-val" id="sNewWeek">—</div><div class="stat-sub">new registrations</div></div>
+    </div>
+
+    <!-- Users -->
+    <div class="section-header">
+      <div class="section-title">All Users</div>
+      <input class="search-box" type="text" id="searchBox" placeholder="Search username or name…" oninput="filterTable()">
+    </div>
+
+    <div class="table-wrap">
+      <div id="tableLoading" class="loading"><span class="dot-anim">Loading</span></div>
+      <table id="usersTable" style="display:none">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Points</th>
+            <th>Quizzes</th>
+            <th>Avg %</th>
+            <th>Streak</th>
+            <th>Achievements</th>
+            <th>Registered</th>
+            <th>Last Played</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let _token = sessionStorage.getItem('admin_token') || '';
+let _allUsers = [];
+
+function getBase() {
+  // same origin
+  return '';
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    if (!r.ok) { errEl.textContent = 'Wrong username or password.'; return; }
+    const d = await r.json();
+    _token = d.token;
+    sessionStorage.setItem('admin_token', _token);
+    showPanel();
+  } catch(e) {
+    errEl.textContent = 'Connection error. Is the server running?';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('admin_token');
+  localStorage.removeItem('sq_current_user');
+  _token = '';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showPanel() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  loadStats();
+  loadUsers();
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats', { headers: { 'X-Admin-Token': _token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    document.getElementById('sTotalUsers').textContent = d.total_users;
+    document.getElementById('sTotalQuizzes').textContent = d.total_quizzes;
+    document.getElementById('sActiveToday').textContent = d.active_today;
+    document.getElementById('sNewWeek').textContent = d.new_this_week;
+  } catch(e) {}
+}
+
+async function loadUsers() {
+  try {
+    const r = await fetch('/api/admin/users', { headers: { 'X-Admin-Token': _token } });
+    if (!r.ok) { doLogout(); return; }
+    _allUsers = await r.json();
+    renderTable(_allUsers);
+    document.getElementById('tableLoading').style.display = 'none';
+    document.getElementById('usersTable').style.display = 'table';
+  } catch(e) {
+    document.getElementById('tableLoading').textContent = 'Failed to load users.';
+  }
+}
+
+function filterTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const filtered = q ? _allUsers.filter(u =>
+    u.username.toLowerCase().includes(q) ||
+    (u.display_name || '').toLowerCase().includes(q)
+  ) : _allUsers;
+  renderTable(filtered);
+}
+
+function renderTable(users) {
+  const body = document.getElementById('usersBody');
+  if (!users.length) {
+    body.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--tx2)">No users found</td></tr>';
+    return;
+  }
+  body.innerHTML = users.map((u, i) => {
+    const initial = (u.display_name || u.username)[0].toUpperCase();
+    const color = u.avatar_color || '#7c6af7';
+    const reg = u.created_at ? u.created_at.slice(0,10) : '—';
+    const last = u.last_played ? u.last_played.slice(0,10) : '—';
+    const avg = u.avg_pct != null ? u.avg_pct + '%' : '—';
+    const streak = u.streak_current || 0;
+    const streakBadge = streak >= 7 ? 'badge-gr' : streak >= 3 ? 'badge-am' : 'badge-re';
+
+    return `<tr>
+      <td style="color:var(--tx3);font-family:'Space Mono',monospace">${i+1}</td>
+      <td>
+        <div class="user-cell">
+          <div class="avatar-chip" style="background:${color}22;color:${color}">${initial}</div>
+          <div>
+            <div class="user-name">${esc(u.display_name || u.username)}</div>
+            <div class="user-uname">@${esc(u.username)}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="points-val">${(u.total_points||0).toLocaleString()}</span></td>
+      <td>${u.total_quizzes || 0}</td>
+      <td>${avg}</td>
+      <td><span class="badge ${streakBadge}">🔥 ${streak}</span></td>
+      <td>${u.achievements_count || 0}</td>
+      <td style="color:var(--tx2);font-size:12px">${reg}</td>
+      <td style="color:var(--tx2);font-size:12px">${last}</td>
+      <td><button class="btn-del" onclick="deleteUser('${esc(u.username)}')">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteUser(username) {
+  if (!confirm(`Delete user "${username}"?\nThis will remove all their results and achievements.`)) return;
+  try {
+    const r = await fetch(`/api/admin/users/${encodeURIComponent(username)}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Token': _token }
+    });
+    if (r.ok) {
+      _allUsers = _allUsers.filter(u => u.username !== username);
+      filterTable();
+      loadStats();
+    }
+  } catch(e) { alert('Error deleting user.'); }
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Auto-login if token saved
+if (_token) {
+  showPanel();
+}
+</script>
+</body>
+</html>

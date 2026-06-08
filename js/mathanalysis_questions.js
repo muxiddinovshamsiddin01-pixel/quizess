@@ -12,21 +12,23 @@
 
 window.MA2_QUESTIONS = [
  {
-    id: 1, topic: 'integrals',
+    id: 1,
+    topic: 'integrals',
     q: 'Let $D = \\{(x,y,z) \\in \\mathbb{R}^3 : x^2+y^2 \\le 1,\\; 0 \\le z \\le \\sqrt{x^2+y^2}\\}$. The value of $\\iiint_D |x|\\,dx\\,dy\\,dz$ is',
-    opts: ['$\\pi$', '$0$', '$\\frac{4}{7}$', '$\\frac{4}{3}$'],
-    correct: 3,
-    explanation: 'Cylindrical coordinates: $\\int_0^{2\\pi}|\\cos\\theta|d\\theta \\cdot \\int_0^1 r^3 dr = 4 \\cdot \\frac{1}{4} = \\frac{4}{3}$.',
+    opts: ['$\\pi$', '$0$', '$1$', '$\\frac{4}{3}$'],
+    correct: 2,
+    explanation: 'Using cylindrical coordinates $x=r\\cos\\theta$, $dV=r\\,dr\\,d\\theta\\,dz$.\nThe region is $0\\le r\\le1$, $0\\le\\theta\\le2\\pi$, $0\\le z\\le r$. Thus\n\n$\\iiint_D |x|\\,dV = \\int_0^{2\\pi}\\int_0^1\\int_0^r r|\\cos\\theta|\\cdot r\\,dz\\,dr\\,d\\theta = \\int_0^{2\\pi}|\\cos\\theta|\\,d\\theta \\cdot \\int_0^1 r^3\\,dr = 4\\cdot\\frac14 = 1.$\n\nTherefore the value of the integral is $1$.',
     exam: '22.01.2026'
-  },
+},
   {
-    id: 2, topic: 'series',
+    id: 2,
+    topic: 'series',
     q: 'The second-order Maclaurin polynomial of $f(x,y) = xye^{x+y}$ is',
     opts: ['$0$', '$x+y$', '$xy + x + y$', '$xy$'],
-    correct: 2,
-    explanation: '$f(0,0)=0$, all 1st partials $=0$, $f_{xy}(0,0)=1$. But also need to account for all degree-2 terms. The result $xy+x+y$ follows from expansion.',
+    correct: 3,
+    explanation: 'Using the Maclaurin expansion $e^{x+y}=1+(x+y)+\\frac{(x+y)^2}{2}+\\cdots$, we obtain\n\n$f(x,y)=xy\\,e^{x+y}=xy+xy(x+y)+\\frac{xy(x+y)^2}{2}+\\cdots$.\n\nThe second-order Maclaurin polynomial contains only terms of total degree at most 2. Since $xy$ has degree 2 and all remaining terms have degree at least 3, the second-order polynomial is $P_2(x,y)=xy$.',
     exam: '22.01.2026'
-  },
+},
   {
     id: 3, topic: 'vector',
     q: 'The flux of $\\nabla\\times\\mathbf{F}$ of $\\mathbf{F}=(-y,x,1)$ through the surface (cylinder $x^2+y^2\\le1$ capped by $z=xy$), normal pointing upward, is',

@@ -35,6 +35,7 @@ const API = {
   createUser:      (username, display_name) =>
     apiFetch('/api/users', { method: 'POST', body: JSON.stringify({ username, display_name }) }),
   getUser:         (username) => apiFetch(`/api/users/${username}`),
+  getUserStats:    (username) => apiFetch(`/api/users/${username}/stats`),
   updateUser:      (username, data) =>
     apiFetch(`/api/users/${username}`, { method: 'PATCH', body: JSON.stringify(data) }),
   submitResult:    (data) =>
@@ -63,18 +64,20 @@ async function showPointsToast(points, newAchievements = []) {
   }
   t.innerHTML = `
     <div style="font-size:22px;font-weight:800;color:var(--pk2)">+${points} ⭐</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:2px">очков заработано</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px">points earned</div>
     ${achHtml}`;
   document.body.appendChild(t);
   setTimeout(() => { t.style.transition = 'opacity .4s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3500);
 }
 
 // ── Submit quiz result ───────────────────────────────────────
-async function submitQuizResult({ subject, mode, score, total, pct, time_seconds }) {
+async function submitQuizResult({ subject, mode, score, total, pct, time_seconds, points_override }) {
   const username = Auth.getUsername();
   if (!username) return null;
   try {
-    const res = await API.submitResult({ username, subject, mode, score, total, pct, time_seconds });
+    const body = { username, subject, mode, score, total, pct, time_seconds };
+    if (points_override !== undefined) body.points_override = points_override;
+    const res = await API.submitResult(body);
     if (res?.points_earned) showPointsToast(res.points_earned, res.new_achievements);
     return res;
   } catch (e) {

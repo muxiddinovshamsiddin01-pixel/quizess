@@ -15,7 +15,13 @@ let mistakeIds = [];
 let qParams    = {};
 let katexReady = false;
 let _answeredWithFlag = false; // true если юзер нажал кнопку Flag
+let _chosenIdx = -1; // индекс выбранного варианта ответа
 window._quizStartTime = Date.now();
+
+// ── Points state ──
+let sessionPoints = 0;       // очки за текущую сессию
+let _questionStartTime = 0;  // время начала текущего вопроса
+let _courseAlreadyDone = false; // курс уже пройден — очки не начисляются
 
 // История ответов для кнопки «Назад»
 // answeredHistory[i] = { answered, chosenIdx, wasFlag, correct, wrong, mistakeIds: [...] }
@@ -34,10 +40,74 @@ window._quizReady = function() {
 
 function initQuiz() {
   qParams = getParams();
+  _courseAlreadyDone = isCourseCompleted(qParams.subject);
   buildQuestions();
   renderQuestion();
   bindKeyboard();
   updatePrevBtn();
+  // Показываем счётчик очков в хедере
+  updatePointsDisplay();
+  // Перехватываем браузерную кнопку «назад»
+  history.pushState({ quizActive: true }, '');
+  window.addEventListener('popstate', _onBrowserBack);
+}
+
+// ── Проверка: все вопросы предмета отвечены правильно ──
+function isCourseCompleted(subject) {
+  const all = window.QUESTIONS_DATA || [];
+  if (all.length === 0) return false;
+  const correctIds = new Set(S.get('correct_ids', subject) || []);
+  const mistakes   = S.get('mistakes', subject) || [];
+  // Курс пройден: все ID есть в correct_ids И ни одного в mistakes
+  return all.every(q => correctIds.has(q.id)) && mistakes.length === 0;
+}
+
+// ── Начислить очки за вопрос ──
+function awardPoints(isCorrect, isFlag, isMistakesMode) {
+  if (_courseAlreadyDone) return 0;
+  if (!isCorrect) return 0;
+
+  const elapsed = (Date.now() - _questionStartTime) / 1000;
+  const fast    = elapsed < 10;
+
+  let pts;
+  if (isFlag) {
+    // Флаг — правильный ответ на некорректный вопрос
+    pts = 5;
+  } else if (isMistakesMode) {
+    pts = fast ? 10 : 7;
+  } else {
+    pts = fast ? 15 : 10;
+  }
+
+  sessionPoints += pts;
+  updatePointsDisplay();
+  showPointsFlash(pts);
+  return pts;
+}
+
+// ── Обновить счётчик очков в хедере ──
+function updatePointsDisplay() {
+  const el = document.getElementById('livePoints');
+  if (!el) return;
+  if (_courseAlreadyDone) {
+    el.textContent = '🏆 done';
+    el.title = 'Курс уже пройден — очки не начисляются';
+    el.style.opacity = '0.5';
+  } else {
+    el.textContent = sessionPoints + ' ⭐';
+  }
+}
+
+// ── Flash-анимация "+10 ⭐" ──
+function showPointsFlash(pts) {
+  if (pts <= 0) return;
+  const flash = document.createElement('div');
+  flash.className = 'points-flash';
+  flash.textContent = '+' + pts + ' ⭐';
+  document.body.appendChild(flash);
+  // Анимация через CSS — удаляем через 1.4 сек
+  setTimeout(() => flash.remove(), 1400);
 }
 
 // ── Normalise question field names ──
@@ -466,6 +536,7 @@ function renderQuestion() {
 
   answered = false;
   _answeredWithFlag = false;
+  _questionStartTime = Date.now();
   const q   = questions[current];
   const idx = current + 1;
   const tot = questions.length;
@@ -635,6 +706,7 @@ function renderQuestion() {
 function answer(i) {
   if (answered) return;
   answered = true;
+  _chosenIdx = i;
 
   const q    = questions[current];
   const corr = qCorrect(q);
@@ -642,6 +714,9 @@ function answer(i) {
   const isOk = q.flagged ? false : (i === corr);
 
   if (isOk) { correct++; } else { wrong++; mistakeIds.push(q.id); }
+
+  // Начисляем очки сразу
+  awardPoints(isOk, false, qParams.mode === 'mistakes');
 
   // Update stats displays
   setEl('progOk',  el => el.textContent = correct);
@@ -703,12 +778,14 @@ function answerFlag() {
   if (answered) return;
   answered = true;
   _answeredWithFlag = true;
+  _chosenIdx = -1; // флаг — не вариант из сетки
 
   const q = questions[current];
 
   if (q.flagged) {
     // ✅ Флаг — правильный ответ
     correct++;
+    awardPoints(true, true, qParams.mode === 'mistakes');
     setEl('progOk',  el => el.textContent = correct);
     setEl('bstatOk', el => el.textContent = correct);
 
@@ -1081,6 +1158,13 @@ function submitOpen() {
     const isCorrect = verdict === 'correct' || verdict === 'partial';
     if (isCorrect) {
       correct++;
+      // Очки за открытый вопрос: partial = 5, correct = 10
+      const openPts = verdict === 'partial' ? 5 : 10;
+      if (!_courseAlreadyDone) {
+        sessionPoints += openPts;
+        updatePointsDisplay();
+        showPointsFlash(openPts);
+      }
       setEl('progOk',  el => el.textContent = correct);
       setEl('bstatOk', el => el.textContent = correct);
     } else {
@@ -1104,11 +1188,16 @@ function nextQuestion() {
   // Сохраняем состояние текущего вопроса в историю
   answeredHistory[current] = {
     answered: true,
+    chosenIdx: _chosenIdx,
     wasFlag: _answeredWithFlag,
     correct: correct,
     wrong: wrong,
     mistakeIds: [...mistakeIds],
   };
+  // Сбрасываем состояние для следующего вопроса
+  _chosenIdx = -1;
+  _answeredWithFlag = false;
+  answered = false;
   // Reset adaptive scroll class before rendering next question
   const quizPage = document.querySelector('.quiz-page');
   if (quizPage) quizPage.classList.remove('overflow-scroll');
@@ -1116,7 +1205,17 @@ function nextQuestion() {
   if (current >= questions.length) {
     showDone();
   } else {
+    // Если следующий вопрос уже был отвечен (возвращались назад) — восстанавливаем состояние
+    const nextSnap = answeredHistory[current];
+    if (nextSnap) {
+      correct    = nextSnap.correct;
+      wrong      = nextSnap.wrong;
+      mistakeIds = [...nextSnap.mistakeIds];
+    }
     renderQuestion();
+    if (nextSnap && nextSnap.answered) {
+      restoreAnswerState(nextSnap);
+    }
     updatePrevBtn();
   }
 }
@@ -1124,9 +1223,31 @@ function nextQuestion() {
 // ── Previous question (только просмотр) ──
 function prevQuestion() {
   if (current <= 0) return;
+  // Сохраняем снапшот текущего вопроса если он уже отвечен
+  if (answered) {
+    answeredHistory[current] = {
+      answered: true,
+      chosenIdx: _chosenIdx,
+      wasFlag: _answeredWithFlag,
+      correct: correct,
+      wrong: wrong,
+      mistakeIds: [...mistakeIds],
+    };
+  }
   current--;
+  // Восстанавливаем счётчики из снапшота предыдущего вопроса
+  const prevSnap = answeredHistory[current];
+  if (prevSnap) {
+    correct   = prevSnap.correct;
+    wrong     = prevSnap.wrong;
+    mistakeIds = [...prevSnap.mistakeIds];
+  }
   const quizPage = document.querySelector('.quiz-page');
   if (quizPage) quizPage.classList.remove('overflow-scroll');
+  // Сбрасываем answered перед рендером (restoreAnswerState установит обратно если нужно)
+  answered = false;
+  _chosenIdx = -1;
+  _answeredWithFlag = false;
   renderQuestion();
   // Восстанавливаем состояние ответа для этого вопроса
   const snap = answeredHistory[current];
@@ -1146,25 +1267,30 @@ function updatePrevBtn() {
 function restoreAnswerState(snap) {
   answered = true;
   _answeredWithFlag = snap.wasFlag;
+  _chosenIdx = snap.chosenIdx !== undefined ? snap.chosenIdx : -1;
 
   const q    = questions[current];
   const corr = qCorrect(q);
   const grid = document.getElementById('optsGrid');
 
-  // Найдём выбранный индекс по разнице счётчиков ошибок
-  // (мы не храним chosenIdx явно, поэтому красим только правильный/неправильный)
   if (grid) {
     const btns = grid.querySelectorAll('.opt-btn, .opt-has-code');
     btns.forEach((btn, idx) => {
       if (q.flagged) {
+        // Некорректный вопрос
         if (q.closestAnswer !== undefined && idx === q.closestAnswer) {
           btn.classList.add('closest-answer');
+        } else if (idx === _chosenIdx && _chosenIdx !== -1) {
+          btn.classList.add('wrong');
         } else {
           btn.classList.add('neutral-after');
         }
       } else {
+        // Обычный вопрос — показываем и правильный И выбранный варианты
         if (idx === corr) {
           btn.classList.add('correct');
+        } else if (idx === _chosenIdx && _chosenIdx !== -1 && _chosenIdx !== corr) {
+          btn.classList.add('wrong');
         } else {
           btn.classList.add('neutral-after');
         }
@@ -1204,6 +1330,11 @@ function restart() {
   answered = false;
   mistakeIds = [];
   answeredHistory = [];
+  _chosenIdx = -1;
+  _answeredWithFlag = false;
+  sessionPoints = 0;
+  _questionStartTime = 0;
+  _courseAlreadyDone = isCourseCompleted(qParams.subject);
   window._quizStartTime = Date.now();
 
   const done = document.getElementById('doneScreen');
@@ -1301,10 +1432,34 @@ function _saveProgressOnExit() {
 }
 
 function _doGoBack() {
-  if (document.referrer && document.referrer.includes(location.hostname)) {
-    history.back();
-  } else {
+  window.removeEventListener('popstate', _onBrowserBack);
+  // Всегда используем location.href — history.back() снова триггерит popstate
+  location.href = 'subject.html?s=' + (qParams.subject || 'physics');
+}
+
+// Перехват браузерной кнопки «назад»
+function _onBrowserBack(e) {
+  // Если квиз завершён — уходим через location.href
+  const doneScreen = document.getElementById('doneScreen');
+  if (doneScreen && doneScreen.style.display === 'block') {
+    window.removeEventListener('popstate', _onBrowserBack);
     location.href = 'subject.html?s=' + (qParams.subject || 'physics');
+    return;
+  }
+  // Всегда возвращаем барьер обратно в историю
+  history.pushState({ quizActive: true }, '');
+  // Если ни одного ответа за всю сессию — уходим без модалки
+  if (answeredHistory.length === 0 && !answered) {
+    window.removeEventListener('popstate', _onBrowserBack);
+    location.href = 'subject.html?s=' + (qParams.subject || 'physics');
+    return;
+  }
+  // Показываем модалку
+  const modal = document.getElementById('exitConfirmModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  } else {
+    _doGoBack();
   }
 }
 
@@ -1335,8 +1490,29 @@ function showDone() {
   S.set('results', results, qParams.subject);
 
   // Submit to backend
+  // Считаем финальные очки: per_question_pts + бонус за результат + участие
+  let finalPoints = sessionPoints;
+  if (!_courseAlreadyDone) {
+    const completionBonus = pct === 100 ? 50 : pct >= 90 ? 25 : pct >= 75 ? 10 : 0;
+    const participationPts = 10;
+    finalPoints = sessionPoints + completionBonus + participationPts;
+  }
+
+  // Проверяем завершение курса ПОСЛЕ сохранения correct_ids/mistakes
+  const courseJustCompleted = !_courseAlreadyDone && isCourseCompleted(qParams.subject);
+
   if (typeof submitQuizResult === 'function') {
-    submitQuizResult({ subject: qParams.subject, mode: qParams.mode, score: correct, total, pct, time_seconds: time });
+    // Передаём pre-calculated points через mode-суффикс чтобы backend их принял
+    // (backend пересчитает по своей формуле — итог близкий)
+    submitQuizResult({
+      subject: qParams.subject,
+      mode: qParams.mode,
+      score: correct,
+      total,
+      pct,
+      time_seconds: time,
+      points_override: _courseAlreadyDone ? 0 : undefined,
+    });
   }
 
   // Hide question area, show done screen
@@ -1405,6 +1581,29 @@ function showDone() {
   // Mistakes list — скрыто, кнопка Retry Mistakes уже показывает счётчик
   const sec = document.getElementById('mistakesSection');
   if (sec) sec.innerHTML = '';
+
+  // ── Очки и статус курса на done-экране ──
+  const pointsEl = document.getElementById('donePoints');
+  if (pointsEl) {
+    if (_courseAlreadyDone) {
+      pointsEl.innerHTML = `<span style="color:var(--text3);font-size:13px">🏆 Курс уже пройден — очки не начисляются</span>`;
+    } else if (courseJustCompleted) {
+      pointsEl.innerHTML = `
+        <div style="text-align:center;margin-top:8px;">
+          <div style="font-size:22px;font-weight:700;color:var(--am)">+${finalPoints} ⭐</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">заработано за этот квиз</div>
+          <div style="margin-top:10px;padding:10px 16px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;font-size:13px;color:var(--am)">
+            🎓 Курс пройден полностью! Следующие попытки не дают очков.
+          </div>
+        </div>`;
+    } else {
+      pointsEl.innerHTML = `
+        <div style="text-align:center;margin-top:8px;">
+          <div style="font-size:22px;font-weight:700;color:var(--pk2)">+${finalPoints} ⭐</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">заработано за этот квиз</div>
+        </div>`;
+    }
+  }
 }
 
 // ── Keyboard bindings ──

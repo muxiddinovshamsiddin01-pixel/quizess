@@ -2,6 +2,25 @@
    QUIZ.CSS — Physics Quiz Page
    ═══════════════════════════════════════════ */
 
+/* ── Points flash animation ── */
+@keyframes pointsFlashAnim {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  60%  { opacity: 1; transform: translateY(-28px) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-52px) scale(0.95); }
+}
+.points-flash {
+  position: fixed;
+  top: 68px;
+  right: 20px;
+  z-index: 9998;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--am, #fbbf24);
+  pointer-events: none;
+  animation: pointsFlashAnim 1.4s cubic-bezier(.22,1,.36,1) forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
 /* ── Top Progress Bar ── */
 .progress-header {
   position: sticky; top: 0; z-index: 40;

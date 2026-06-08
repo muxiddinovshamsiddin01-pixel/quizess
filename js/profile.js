@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Render from localStorage data instantly (no flicker)
 function renderHeroLocal(user) {
-  const name     = (user.display_name || user.username || 'Юзер').trim();
+  const name     = (user.display_name || user.username || 'User').trim();
   const initials = name.length >= 2 ? name.slice(0, 2).toUpperCase() : name.toUpperCase();
   const color    = user.avatar_color || '#c850f0';
   const av = document.getElementById('profileAvatar');
@@ -53,7 +53,7 @@ function renderHeroLocal(user) {
 }
 
 function renderStatsLocal(user) {
-  setEl('statPoints',     (user.total_points || 0).toLocaleString('ru'));
+  setEl('statPoints',     (user.total_points || 0).toLocaleString('en'));
   setEl('statBestStreak', user.streak_best || 0);
   setEl('statQuizzes',    '—');
   setEl('statAvg',        '—');
@@ -90,7 +90,7 @@ async function loadProfile(username) {
 }
 
 function renderHero(user, rank) {
-  const name     = (user.display_name || user.username || 'Юзер').trim();
+  const name     = (user.display_name || user.username || 'User').trim();
   const initials = name.length >= 2 ? name.slice(0, 2).toUpperCase() : name.toUpperCase();
   const color    = user.avatar_color || '#c850f0';
 
@@ -111,19 +111,19 @@ function renderHero(user, rank) {
   const streak = user.streak_current || 0;
   const streakChip = document.getElementById('metaStreak');
   if (streakChip) {
-    const label = streak === 1 ? 'день' : streak >= 2 && streak <= 4 ? 'дня' : 'дней';
+    const label = streak === 1 ? 'day' : 'days';
     streakChip.querySelector('span').textContent = streak + ' ' + label;
   }
 
   const joinedChip = document.getElementById('metaJoined');
   if (joinedChip && user.created_at) {
     joinedChip.querySelector('span').textContent =
-      new Date(user.created_at).toLocaleDateString('ru', { month: 'short', year: 'numeric' });
+      new Date(user.created_at).toLocaleDateString('en', { month: 'short', year: 'numeric' });
   }
 }
 
 function renderStats(user, results) {
-  setEl('statPoints',     (user.total_points || 0).toLocaleString('ru'));
+  setEl('statPoints',     (user.total_points || 0).toLocaleString('en'));
   setEl('statQuizzes',    results.length);
   setEl('statBestStreak', user.streak_best || 0);
   const avg = results.length
@@ -141,7 +141,7 @@ function renderAchievements(achievements) {
   if (!grid) return;
 
   if (!achievements.length) {
-    grid.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)">Нет достижений</div>';
+    grid.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)">No achievements yet</div>';
     return;
   }
 
@@ -152,7 +152,7 @@ function renderAchievements(achievements) {
         <div class="ach-title">${a.title}</div>
         <div class="ach-desc">${a.desc}</div>
         ${a.earned
-          ? `<div class="ach-date">${new Date(a.earned_at).toLocaleDateString('ru')}</div>`
+          ? `<div class="ach-date">${new Date(a.earned_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}</div>`
           : `<div class="ach-pts">+${a.points} ⭐</div>`}
       </div>
     </div>`).join('');
@@ -160,11 +160,11 @@ function renderAchievements(achievements) {
 
 function renderHistory(results) {
   const el = document.getElementById('profileHistory');
-  setEl('historyCount', results.length + ' квизов');
+  setEl('historyCount', results.length + ' quizzes');
   if (!el) return;
 
   if (!results.length) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3)">Нет квизов — пройди первый! 🚀</div>';
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3)">No quizzes yet — take your first one! 🚀</div>';
     return;
   }
 
@@ -176,7 +176,7 @@ function renderHistory(results) {
   el.innerHTML = results.map(r => {
     const pctColor = r.pct >= 80 ? 'var(--gr)' : r.pct >= 60 ? 'var(--am)' : 'var(--re)';
     const sc       = subjectColor[r.subject] || 'var(--pk)';
-    const date     = new Date(r.played_at).toLocaleDateString('ru', { day: '2-digit', month: 'short' });
+    const date     = new Date(r.played_at).toLocaleDateString('en', { day: '2-digit', month: 'short' });
     return `
     <div class="hist-item">
       <div class="hist-pct" style="color:${pctColor}">${r.pct}%</div>
@@ -239,7 +239,7 @@ async function saveProfile() {
     renderHero(updated, document.getElementById('metaRank')?.querySelector('span')?.textContent?.replace('#','') || '—');
     hideEditModal();
   } catch (e) {
-    alert('Ошибка сохранения: ' + e.message);
+    alert('Save error: ' + e.message);
   }
 }
 

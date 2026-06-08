@@ -339,6 +339,29 @@ async function doLogin() {
       }
       throw new Error(data.detail || 'Login error');
     }
+    // ── Admin redirect ──
+    if (data.is_admin) {
+      // Получаем admin token и сохраняем — чтобы admin.html не просил логин снова
+      try {
+        const tokenRes = await fetch(API_BASE + '/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const tokenData = await tokenRes.json();
+        if (tokenData.token) {
+          sessionStorage.setItem('admin_token', tokenData.token);
+        }
+      } catch (_) {}
+      // Сохраняем минимальную сессию для is_admin проверок на фронте
+      localStorage.setItem('sq_current_user', JSON.stringify({
+        username: username,
+        display_name: 'Admin',
+        is_admin: true,
+      }));
+      location.href = '/admin';
+      return;
+    }
     saveSession(data);
     location.href = 'dashboard.html';
   } catch (e) {
@@ -427,8 +450,13 @@ document.addEventListener('keydown', e => {
 
 // ── Already logged in? ──
 (function() {
-  const user = localStorage.getItem('sq_current_user');
-  if (user) { try { JSON.parse(user); location.href = 'dashboard.html'; } catch {} }
+  const raw = localStorage.getItem('sq_current_user');
+  if (raw) {
+    try {
+      const user = JSON.parse(raw);
+      location.href = user?.is_admin ? '/admin' : 'dashboard.html';
+    } catch {}
+  }
 })();
 </script>
 </body>

@@ -26,6 +26,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 # Self-ping URL: set RENDER_EXTERNAL_URL in Render environment variables
 # e.g. https://your-app-name.onrender.com
 RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme123")
 
 # Resolve SQLite file path relative to this script
 _sqlite_path = DATABASE_URL.replace("sqlite:///", "")
@@ -56,9 +58,9 @@ async def lifespan(app: FastAPI):
     init_db()
     if RENDER_EXTERNAL_URL:
         asyncio.create_task(self_ping_loop())
-        print(f"  Pinger → активен ({RENDER_EXTERNAL_URL})")
+        print(f"  Pinger -> active ({RENDER_EXTERNAL_URL})")
     else:
-        print("  Pinger → выключен (RENDER_EXTERNAL_URL не задан)")
+        print("  Pinger -> disabled (RENDER_EXTERNAL_URL not set)")
     yield
 
 app = FastAPI(title="StudyQuiz API", version="1.0.0", lifespan=lifespan)
@@ -110,6 +112,8 @@ def serve_images(file_path: str):
     return _no_cache_file(os.path.join(_FRONT_DIR, "images", file_path))
 
 @app.get("/", include_in_schema=False)
+@app.get("/login", include_in_schema=False)
+@app.get("/login.html", include_in_schema=False)
 def serve_login():
     return FileResponse(os.path.join(_FRONT_DIR, "login.html"))
 
@@ -137,6 +141,11 @@ def serve_profile():
 @app.get("/leaderboard.html", include_in_schema=False)
 def serve_leaderboard():
     return FileResponse(os.path.join(_FRONT_DIR, "leaderboard.html"))
+
+@app.get("/admin", include_in_schema=False)
+@app.get("/admin.html", include_in_schema=False)
+def serve_admin():
+    return FileResponse(os.path.join(_FRONT_DIR, "admin.html"))
 
 # ----------------------------------------------------------------
 # DB helpers (SQLite)
@@ -219,19 +228,19 @@ def init_db():
 # ----------------------------------------------------------------
 
 ACHIEVEMENTS = [
-    {"slug": "first_quiz",       "icon": "🎯", "title": "Первый квиз",   "desc": "Пройди свой первый квиз",            "points": 50,   "condition": lambda s, r: r["total_quizzes"] >= 1},
-    {"slug": "perfect_100",      "icon": "💯", "title": "Идеально!",      "desc": "Набери 100% в квизе",                "points": 200,  "condition": lambda s, r: r.get("last_pct", 0) == 100},
-    {"slug": "quiz_10",          "icon": "📚", "title": "Книжный червь",  "desc": "Пройди 10 квизов",                   "points": 100,  "condition": lambda s, r: r["total_quizzes"] >= 10},
-    {"slug": "quiz_50",          "icon": "🏆", "title": "Ветеран",        "desc": "Пройди 50 квизов",                   "points": 300,  "condition": lambda s, r: r["total_quizzes"] >= 50},
-    {"slug": "streak_3",         "icon": "🔥", "title": "3 дня подряд",   "desc": "Учись 3 дня подряд",                 "points": 75,   "condition": lambda s, r: r.get("streak_current", 0) >= 3},
-    {"slug": "streak_7",         "icon": "🌟", "title": "Неделя!",        "desc": "Учись 7 дней подряд",                "points": 200,  "condition": lambda s, r: r.get("streak_current", 0) >= 7},
-    {"slug": "streak_30",        "icon": "👑", "title": "Месяц силы",     "desc": "Учись 30 дней подряд",               "points": 1000, "condition": lambda s, r: r.get("streak_current", 0) >= 30},
-    {"slug": "score_1000",       "icon": "⭐", "title": "1000 очков",     "desc": "Набери 1000 очков всего",            "points": 100,  "condition": lambda s, r: s["total_points"] >= 1000},
-    {"slug": "score_5000",       "icon": "💫", "title": "5000 очков",     "desc": "Набери 5000 очков всего",            "points": 200,  "condition": lambda s, r: s["total_points"] >= 5000},
-    {"slug": "physics_master",   "icon": "⚛️","title": "Физик",           "desc": "Пройди 5 квизов по физике",          "points": 150,  "condition": lambda s, r: r.get("physics_quizzes", 0) >= 5},
-    {"slug": "mathanalysis_ace", "icon": "∫",  "title": "Аналитик",       "desc": "Пройди 5 квизов по матанализу",      "points": 150,  "condition": lambda s, r: r.get("mathanalysis_quizzes", 0) >= 5},
-    {"slug": "speed_demon",      "icon": "⚡", "title": "Молния",         "desc": "Пройди квиз менее чем за 2 минуты", "points": 100,  "condition": lambda s, r: 0 < r.get("last_time", 9999) < 120},
-    {"slug": "perfect_streak_3", "icon": "🎖️","title": "Без ошибок x3",  "desc": "3 квиза подряд с 100%",             "points": 300,  "condition": lambda s, r: r.get("perfect_streak", 0) >= 3},
+    {"slug": "first_quiz",       "icon": "🎯", "title": "First Quiz",      "desc": "Complete your first quiz",               "points": 50,   "condition": lambda s, r: r["total_quizzes"] >= 1},
+    {"slug": "perfect_100",      "icon": "💯", "title": "Perfect!",         "desc": "Score 100% in a quiz",                   "points": 200,  "condition": lambda s, r: r.get("last_pct", 0) == 100},
+    {"slug": "quiz_10",          "icon": "📚", "title": "Bookworm",         "desc": "Complete 10 quizzes",                    "points": 100,  "condition": lambda s, r: r["total_quizzes"] >= 10},
+    {"slug": "quiz_50",          "icon": "🏆", "title": "Veteran",          "desc": "Complete 50 quizzes",                    "points": 300,  "condition": lambda s, r: r["total_quizzes"] >= 50},
+    {"slug": "streak_3",         "icon": "🔥", "title": "3-Day Streak",     "desc": "Study 3 days in a row",                  "points": 75,   "condition": lambda s, r: r.get("streak_current", 0) >= 3},
+    {"slug": "streak_7",         "icon": "🌟", "title": "One Week!",        "desc": "Study 7 days in a row",                  "points": 200,  "condition": lambda s, r: r.get("streak_current", 0) >= 7},
+    {"slug": "streak_30",        "icon": "👑", "title": "Month of Power",   "desc": "Study 30 days in a row",                 "points": 1000, "condition": lambda s, r: r.get("streak_current", 0) >= 30},
+    {"slug": "score_1000",       "icon": "⭐", "title": "1000 Points",      "desc": "Earn 1000 total points",                 "points": 100,  "condition": lambda s, r: s["total_points"] >= 1000},
+    {"slug": "score_5000",       "icon": "💫", "title": "5000 Points",      "desc": "Earn 5000 total points",                 "points": 200,  "condition": lambda s, r: s["total_points"] >= 5000},
+    {"slug": "physics_master",   "icon": "⚛️","title": "Physicist",         "desc": "Complete 5 physics quizzes",             "points": 150,  "condition": lambda s, r: r.get("physics_quizzes", 0) >= 5},
+    {"slug": "mathanalysis_ace", "icon": "∫",  "title": "Analyst",          "desc": "Complete 5 math analysis quizzes",       "points": 150,  "condition": lambda s, r: r.get("mathanalysis_quizzes", 0) >= 5},
+    {"slug": "speed_demon",      "icon": "⚡", "title": "Lightning",        "desc": "Complete a quiz in under 2 minutes",     "points": 100,  "condition": lambda s, r: 0 < r.get("last_time", 9999) < 120},
+    {"slug": "perfect_streak_3", "icon": "🎖️","title": "Flawless x3",      "desc": "3 quizzes in a row with 100%",           "points": 300,  "condition": lambda s, r: r.get("perfect_streak", 0) >= 3},
 ]
 
 
@@ -299,6 +308,9 @@ def register(body: RegisterBody):
         raise HTTPException(400, "Username must be at least 3 characters")
     if not body.password or len(body.password) < 4:
         raise HTTPException(400, "Password must be at least 4 characters")
+    # Блокируем регистрацию на зарезервированный admin username
+    if uname == ADMIN_USERNAME.lower():
+        raise HTTPException(400, "This username is reserved")
     ph = _hash_password(body.password)
     with db() as cur:
         cur.execute("SELECT username FROM sq_users WHERE username=?", (uname,))
@@ -340,6 +352,11 @@ def set_password(body: SetPasswordBody):
 @app.post("/api/auth/login")
 def login(body: LoginBody):
     uname = body.username.lower().strip()
+
+    # ── Admin shortcut: check against .env credentials ──────────
+    if uname == ADMIN_USERNAME.lower() and body.password == ADMIN_PASSWORD:
+        return {"is_admin": True, "username": uname, "display_name": "Admin"}
+
     ph = _hash_password(body.password)
     with db() as cur:
         cur.execute("SELECT * FROM sq_users WHERE username=?", (uname,))
@@ -348,7 +365,6 @@ def login(body: LoginBody):
         raise HTTPException(401, "Invalid username or password")
     row = _row(row)
     stored = row.get("password_hash", "")
-    # Reject if no password hash set (account created without password — must re-register)
     if not stored:
         raise HTTPException(401, "Account has no password set. Please register again.")
     if stored != ph:
@@ -382,6 +398,53 @@ def create_user(body: UserCreate):
         return _row(cur.fetchone())
 
 
+@app.get("/api/users/{username}/stats")
+def get_user_stats(username: str):
+    """Returns per-subject quiz stats for profile modal in leaderboard."""
+    subjects = ["physics", "mathanalysis", "linalg", "drawing", "fundamental"]
+    with db() as cur:
+        cur.execute("SELECT * FROM sq_users WHERE username=?", (username,))
+        user = cur.fetchone()
+        if not user:
+            raise HTTPException(404, "User not found")
+        user = _row(user)
+
+        subject_stats = {}
+        for subj in subjects:
+            cur.execute("""
+                SELECT COUNT(*) as cnt, ROUND(AVG(pct),1) as avg_pct, MAX(pct) as best_pct
+                FROM sq_results WHERE username=? AND subject=?
+            """, (username, subj))
+            row = _row(cur.fetchone())
+            if row and row["cnt"] > 0:
+                subject_stats[subj] = {
+                    "quizzes":  row["cnt"],
+                    "avg_pct":  row["avg_pct"],
+                    "best_pct": row["best_pct"],
+                }
+
+        cur.execute("SELECT COUNT(*) as cnt FROM sq_achievements WHERE username=?", (username,))
+        ach_count = cur.fetchone()["cnt"]
+
+        cur.execute("""
+            SELECT subject, mode, pct, played_at FROM sq_results
+            WHERE username=? ORDER BY played_at DESC LIMIT 5
+        """, (username,))
+        recent = [_row(r) for r in cur.fetchall()]
+
+    return {
+        "username":       user["username"],
+        "display_name":   user["display_name"],
+        "avatar_color":   user["avatar_color"],
+        "total_points":   user["total_points"],
+        "streak_current": user["streak_current"],
+        "streak_best":    user["streak_best"],
+        "achievements":   ach_count,
+        "subject_stats":  subject_stats,
+        "recent_results": recent,
+    }
+
+
 @app.get("/api/users/{username}")
 def get_user(username: str):
     with db() as cur:
@@ -411,19 +474,24 @@ def update_user(username: str, body: UserUpdate):
 # ---- Results ---------------------------------------------------
 
 class ResultCreate(BaseModel):
-    username:     str
-    subject:      str
-    mode:         str
-    score:        int
-    total:        int
-    pct:          int
-    time_seconds: int = 0
+    username:        str
+    subject:         str
+    mode:            str
+    score:           int
+    total:           int
+    pct:             int
+    time_seconds:    int = 0
+    points_override: Optional[int] = None  # если 0 — курс пройден, не начислять
 
 
 @app.post("/api/results", status_code=201)
 def submit_result(body: ResultCreate):
     username = body.username.lower().strip()
-    points   = calc_points(body.pct, body.total, body.time_seconds)
+    # Если points_override == 0 — курс уже пройден, очки не начисляем
+    if body.points_override is not None and body.points_override == 0:
+        points = 0
+    else:
+        points = calc_points(body.pct, body.total, body.time_seconds)
 
     with db() as cur:
         cur.execute("SELECT * FROM sq_users WHERE username=?", (username,))
@@ -508,8 +576,6 @@ def get_results(username: str, limit: int = 20):
         return [_row(r) for r in cur.fetchall()]
 
 
-# ---- Achievements ----------------------------------------------
-
 @app.get("/api/achievements/{username}")
 def get_achievements(username: str):
     with db() as cur:
@@ -567,6 +633,83 @@ def get_user_rank(username: str):
     if username not in users:
         raise HTTPException(404, "User not found")
     return {"rank": users.index(username) + 1}
+
+
+# ---- Admin -----------------------------------------------------
+
+class AdminLogin(BaseModel):
+    username: str
+    password: str
+
+@app.post("/api/admin/login")
+def admin_login(body: AdminLogin):
+    if body.username == ADMIN_USERNAME and body.password == ADMIN_PASSWORD:
+        # простой токен: hash(username+password+secret)
+        token = hashlib.sha256(f"{ADMIN_USERNAME}:{ADMIN_PASSWORD}:studyquiz_admin".encode()).hexdigest()
+        return {"ok": True, "token": token}
+    raise HTTPException(401, "Invalid credentials")
+
+def _check_admin(request: Request):
+    token = request.headers.get("X-Admin-Token", "")
+    expected = hashlib.sha256(f"{ADMIN_USERNAME}:{ADMIN_PASSWORD}:studyquiz_admin".encode()).hexdigest()
+    if token != expected:
+        raise HTTPException(403, "Forbidden")
+
+@app.get("/api/admin/users")
+def admin_get_users(request: Request):
+    _check_admin(request)
+    with db() as cur:
+        cur.execute("""
+            SELECT
+                u.username, u.display_name, u.avatar_color,
+                u.total_points, u.streak_current, u.streak_best,
+                u.created_at, u.last_played,
+                COUNT(DISTINCT r.id) AS total_quizzes,
+                ROUND(AVG(r.pct), 1) AS avg_pct,
+                COUNT(DISTINCT a.id) AS achievements_count
+            FROM sq_users u
+            LEFT JOIN sq_results      r ON r.username = u.username
+            LEFT JOIN sq_achievements a ON a.username = u.username
+            GROUP BY u.username
+            ORDER BY u.created_at DESC
+        """)
+        rows = cur.fetchall()
+    return [_row(r) for r in rows]
+
+@app.get("/api/admin/stats")
+def admin_get_stats(request: Request):
+    _check_admin(request)
+    with db() as cur:
+        cur.execute("SELECT COUNT(*) as c FROM sq_users")
+        total_users = cur.fetchone()["c"]
+        cur.execute("SELECT COUNT(*) as c FROM sq_results")
+        total_quizzes = cur.fetchone()["c"]
+        cur.execute("SELECT COUNT(*) as c FROM sq_users WHERE last_played = date('now')")
+        active_today = cur.fetchone()["c"]
+        cur.execute("SELECT COUNT(*) as c FROM sq_users WHERE created_at >= datetime('now', '-7 days')")
+        new_this_week = cur.fetchone()["c"]
+        cur.execute("SELECT username, display_name, total_points FROM sq_users ORDER BY total_points DESC LIMIT 1")
+        top = _row(cur.fetchone()) if cur.rowcount != 0 else None
+        # fix: re-fetch top user
+        cur.execute("SELECT username, display_name, total_points FROM sq_users ORDER BY total_points DESC LIMIT 1")
+        top_row = cur.fetchone()
+        top = _row(top_row) if top_row else None
+    return {
+        "total_users": total_users,
+        "total_quizzes": total_quizzes,
+        "active_today": active_today,
+        "new_this_week": new_this_week,
+        "top_user": top,
+    }
+
+@app.delete("/api/admin/users/{username}")
+def admin_delete_user(username: str, request: Request):
+    _check_admin(request)
+    with db() as cur:
+        cur.execute("DELETE FROM sq_achievements WHERE username=?", (username,))
+        cur.execute("DELETE FROM sq_results WHERE username=?", (username,))
+        cur.execute("DELETE FROM sq_users WHERE username=?", (username,))
+    return {"ok": True}
 
 
 # ---- Questions (served from local JS -- not from DB) -----------
@@ -660,8 +803,8 @@ Rules: Complete ALL 4 sections. Never truncate. Use bullet points (-) for lists.
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
-    print(f"\n  DB   → {_sqlite_path}")
-    print(f"  Key  → {'SET ✓' if GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_NEW_KEY_HERE' else 'NOT SET ✗'}")
-    print(f"  URL  → http://localhost:{port}\n")
+    print(f"\n  DB   -> {_sqlite_path}")
+    print(f"  Key  -> {'SET' if GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_NEW_KEY_HERE' else 'NOT SET'}")
+    print(f"  URL  -> http://localhost:{port}\n")
     uvicorn.run(app, host="0.0.0.0", port=port)
 

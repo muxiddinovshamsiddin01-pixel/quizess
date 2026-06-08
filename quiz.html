@@ -36,6 +36,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         <b id="progErr">0</b>
       </span>
+      <span class="pctr pts" id="livePoints" style="font-size:13px;font-weight:600;color:var(--am);letter-spacing:-.01em;">0 ⭐</span>
     </div>
   </div>
   <div class="prog-bar" style="height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;">
@@ -99,6 +100,9 @@
     <div class="done-grade-wrap">
       <div class="done-grade" id="doneGrade"></div>
     </div>
+
+    <!-- Points earned -->
+    <div id="donePoints" style="min-height:40px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;"></div>
 
     <!-- Action buttons -->
     <div class="done-actions">
@@ -174,6 +178,19 @@
         Got it
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Exit Confirm Modal -->
+<div id="exitConfirmModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--card,#1e1e2e);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:32px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+    <div style="font-size:36px;margin-bottom:12px;">⚠️</div>
+    <h3 style="margin:0 0 10px;font-size:18px;color:var(--tx,#e0e0f0);">Quit quiz?</h3>
+    <p style="margin:0 0 24px;font-size:14px;color:var(--tx2,#a0a0b8);line-height:1.5;">Your progress will be saved, but the quiz session will end.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button onclick="closeExitModal()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:var(--tx,#e0e0f0);font-size:14px;cursor:pointer;">Stay</button>
+      <button onclick="confirmExit()" style="flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Quit</button>
     </div>
   </div>
 </div>
