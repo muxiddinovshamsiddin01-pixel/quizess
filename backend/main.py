@@ -401,7 +401,8 @@ class HeartbeatBody(BaseModel):
 def heartbeat(body: HeartbeatBody):
     """Called every 30s from frontend to track online users."""
     username = body.username.lower().strip()
-    now = datetime.now(timezone.utc).isoformat()
+    # Store as SQLite-compatible UTC string: '2026-06-09 10:00:00'
+    now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     with db() as cur:
         cur.execute("""
             INSERT INTO sq_online(username, last_seen, page)
@@ -730,24 +731,19 @@ def admin_get_stats(request: Request):
         top_row = cur.fetchone()
         top = _row(top_row) if top_row else None
 
-        # Online: seen in last 2 minutes = "online now", last 10 min = "recently"
+        # Online: store/compare as SQLite-compatible UTC string (no T, no Z)
         cur.execute("""
             SELECT o.username, o.last_seen, o.page, u.display_name, u.avatar_color
             FROM sq_online o
             JOIN sq_users u ON u.username = o.username
-            WHERE o.last_seen >= datetime('now', '-30 minutes')
+            WHERE o.last_seen >= strftime('%Y-%m-%d %H:%M:%S', 'now', '-30 minutes')
             ORDER BY o.last_seen DESC
         """)
         online_rows = [_row(r) for r in cur.fetchall()]
 
-        online_now = sum(1 for r in online_rows
-                         if r["last_seen"] >= (datetime.now(timezone.utc).replace(tzinfo=None)
-                         .isoformat()[:16]))  # within ~2 min
-
-        # simpler: count seen in last 2 min
         cur.execute("""
             SELECT COUNT(*) as c FROM sq_online
-            WHERE last_seen >= datetime('now', '-2 minutes')
+            WHERE last_seen >= strftime('%Y-%m-%d %H:%M:%S', 'now', '-2 minutes')
         """)
         online_now = cur.fetchone()["c"]
 

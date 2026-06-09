@@ -526,7 +526,7 @@ async function loadStats() {
     list.innerHTML = online.map(u => {
       const color    = u.avatar_color || '#7c6af7';
       const initial  = (u.display_name || u.username)[0].toUpperCase();
-      const seenMs   = new Date(u.last_seen + (u.last_seen.endsWith('Z') ? '' : 'Z')).getTime();
+      const seenMs   = new Date(u.last_seen.replace(' ', 'T') + 'Z').getTime();
       const diffSec  = Math.floor((now - seenMs) / 1000);
       const isNow    = diffSec < 120;
       let agoText;
