@@ -948,11 +948,21 @@ function openAiReviewModal(question, userAnswer, referenceAnswer, topic, onClose
     })
     .catch(err => {
       _aiLastVerdict = 'incorrect';
+      // Don't show raw error — show a friendly notice + reference answer
+      const refHtml = referenceAnswer
+        ? `<div class="ai-ref-answer" style="margin-top:12px">
+             <div class="ai-ref-label">REFERENCE ANSWER:</div>
+             <div>${renderText(referenceAnswer)}</div>
+           </div>`
+        : '';
       body.innerHTML = `
-        <div class="ai-ref-answer">
-          <div class="ai-ref-label">REFERENCE ANSWER:</div>
-          <div>${renderText(referenceAnswer || 'No reference answer available.')}</div>
-        </div>`;
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;
+          background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);
+          border-radius:10px;margin-bottom:4px;">
+          <span style="font-size:20px">⚠️</span>
+          <span style="font-size:13px;color:var(--am)">AI review is temporarily unavailable. Compare your answer with the reference below.</span>
+        </div>
+        ${refHtml}`;
       if (_aiReviewOnClose) {
         _aiReviewOnClose('incorrect');
         _aiReviewOnClose = null;
