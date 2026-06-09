@@ -800,9 +800,9 @@ async def check_answer(body: CheckAnswerRequest):
 
     topic_line = f"\nTOPIC: {body.topic}" if body.topic else ""
 
-    prompt = f"""You are an engineering drawing (technical drawing) tutor. Review the student's answer below and respond using EXACTLY these 4 sections in order. Do NOT skip any section. Do NOT cut off mid-sentence.
+    prompt = f"""You are a strict but helpful engineering/technical tutor. A student answered an open question. Evaluate the answer and give detailed feedback.
 
-TOPIC: {body.topic or 'Engineering Drawing'}
+TOPIC: {body.topic or 'Engineering'}
 
 QUESTION:
 {body.question}
@@ -815,21 +815,21 @@ CORRECT REFERENCE ANSWER:
 
 ---
 
-Respond in this EXACT format (write all 4 sections, complete sentences only):
+Write your response using EXACTLY these 4 sections. Complete every section fully. Never cut off.
 
-**Evaluation:** [1-2 sentences: correct / partially correct / incorrect, and specifically what was wrong or missing]
+**Evaluation:** [2-3 sentences: state correct / partially correct / incorrect, and summarize what was right and what was wrong]
 
 **What you got right:**
-- [each correct point on its own bullet, or write "Nothing correct" if empty]
+- [list each correct point the student mentioned. If nothing was correct, write "- Nothing was correct."]
 
-**Mistakes / Missing points:**
-- [each error or omission on its own bullet with brief explanation]
+**Mistakes and missing points:**
+- [list each specific mistake or omission with a brief explanation of why it is wrong or what is missing. Be specific. If the answer was fully correct, write "- No mistakes."]
 
-**Model answer:**
-[Complete ideal answer. List every key item from the reference answer as bullet points. Bold the technical terms. 4-10 bullets minimum if the topic has multiple items.]
+**Complete model answer:**
+- [Write the full ideal answer as bullet points. Include every item from the reference answer. Bold **key terms**. Minimum 4 bullets if the topic has multiple items.]
 
 ---
-Rules: Complete ALL 4 sections. Never truncate. Use bullet points (-) for lists."""
+RULES: You MUST write all 4 sections completely. Do NOT stop early. Do NOT summarize — list every point."""
 
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     url   = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
@@ -838,7 +838,7 @@ Rules: Complete ALL 4 sections. Never truncate. Use bullet points (-) for lists.
         async with httpx.AsyncClient(timeout=40) as client:
             resp = await client.post(url, json={
                 "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"maxOutputTokens": 1200, "temperature": 0.2},
+                "generationConfig": {"maxOutputTokens": 2500, "temperature": 0.2},
             })
     except httpx.TimeoutException:
         raise HTTPException(504, "Gemini request timed out — try again")
