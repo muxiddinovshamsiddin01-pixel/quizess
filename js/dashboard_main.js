@@ -56,7 +56,7 @@ function renderOverallProgress() {
   const rows = Object.values(SUBJECTS).map(subj => {
     const st  = getSubjectStats(subj.id);
     const hex = colorMap[subj.color] || '#c850f0';
-    const IDS_MAP2 = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS };
+    const IDS_MAP2 = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS, linalg1: LA1_TOPIC_IDS, fundamental: FUNDAMENTAL_TOPIC_IDS };
     const hasQuestionBank2 = !!IDS_MAP2[subj.id];
 
     let pct = 0, doneText = '';
@@ -177,7 +177,7 @@ function renderSubjects() {
     const st  = getSubjectStats(subj.id);
     const hex = colorMap[subj.color] || '#c850f0';
     // Determine which subjects have question banks with correct_ids tracking
-    const IDS_MAP = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS };
+    const IDS_MAP = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS, linalg1: LA1_TOPIC_IDS, fundamental: FUNDAMENTAL_TOPIC_IDS };
     const hasQuestionBank = !!IDS_MAP[subj.id];
 
     let progressHtml = '';

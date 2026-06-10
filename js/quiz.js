@@ -486,6 +486,10 @@ function buildQuestions() {
     const topicIds = PHYSICS2_TOPIC_IDS[mode];
     if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
     else          pool = [...all];
+  } else if (qParams.subject === 'linalg1') {
+    const topicIds = LA1_TOPIC_IDS[mode];
+    if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
+    else          pool = [...all];
   } else {
     pool = [...all];
   }

@@ -232,6 +232,7 @@
 <script src="js/fundamental_questions.js"></script>
 <script src="js/physics2_data.js"></script>
 <script src="js/physics2_questions.js"></script>
+<script src="js/linalg1_questions.js"></script>
 <script src="js/api.js"></script>
 
 <script>
@@ -252,6 +253,8 @@ window._quizInitialized = false;
     window.QUESTIONS_DATA = window.FUNDAMENTAL_QUESTIONS || [];
   } else if (subject === 'physics2') {
     window.QUESTIONS_DATA = window.PHYSICS2_QUESTIONS || [];
+  } else if (subject === 'linalg1') {
+    window.QUESTIONS_DATA = window.LA1_QUESTIONS || [];
   }
   // physics: QUESTIONS_DATA already set by physics_questions.js
 })();

@@ -184,6 +184,23 @@ const SUBJECTS = {
       internal:   { name: 'Internal Actions',      color: '--am'  },
       safety:     { name: 'Stress & Safety Factor',color: '--gr'  },
     }
+  },
+  linalg1: {
+    id:    'linalg1',
+    name:  'Linear Algebra 1',
+    short: 'LA1',
+    color: '--pk',
+    icon:  'matrix',
+    desc:  'Matrices, Determinants, Inverse Matrix, Systems of Equations, Eigenvalues',
+    topics: {
+      matmul:      { name: 'Matrix Multiplication', color: '--pk'  },
+      inverse:     { name: 'Inverse Matrix',        color: '--cy'  },
+      determinants:{ name: 'Determinants',          color: '--am'  },
+      systems:     { name: 'Systems of Equations',  color: '--gr'  },
+      properties:  { name: 'Matrix Properties',     color: '--vi2' },
+      eigenvalues: { name: 'Eigenvalues',           color: '--pk2' },
+      vectorspaces:{ name: 'Vector Spaces',         color: '--cy'  },
+    }
   }
 };
 
@@ -238,6 +255,18 @@ const FUNDAMENTAL_TOPIC_IDS = {
   structural: [5004],
   internal:   [5005],
   safety:     [5006],
+};
+
+// ── Linear Algebra 1 topic ID map ────────────────────────────
+// IDs 2001–2099 (see js/linalg1_questions.js)
+const LA1_TOPIC_IDS = {
+  matmul:       [2001, 2002, 2003],
+  inverse:      [2004, 2005],
+  determinants: [2006, 2007, 2008, 2009],
+  systems:      [2010, 2011, 2012, 2013],
+  properties:   [2014, 2015, 2016, 2017, 2018, 2019],
+  eigenvalues:  [2020, 2021, 2022],
+  vectorspaces: [2023, 2024],
 };
 
 // ── Math Analysis 2 questions → см. js/mathanalysis_questions.js ──

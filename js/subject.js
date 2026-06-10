@@ -8,7 +8,7 @@ let selectedMode = 'all';
 let selectedCount = 20;
 
 // Subjects that have questions ready
-const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental', 'physics2'];
+const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental', 'physics2', 'linalg1'];
 
 document.addEventListener('DOMContentLoaded', () => {
   subjectId   = new URLSearchParams(location.search).get('s') || 'physics';
@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!subjectData) { location.href = 'dashboard.html'; return; }
 
   document.querySelectorAll('.sidebar .nav-item[href*="subject.html"]').forEach(a => {
-    if (a.href.includes('s=' + subjectId)) a.classList.add('active');
+    const url = new URL(a.href, location.href);
+    if (url.searchParams.get('s') === subjectId) a.classList.add('active');
   });
 
   renderHeader();
@@ -91,6 +92,7 @@ function renderTopics() {
     if (subjectId === 'physics')      return TOPIC_IDS[slug] || [];
     if (subjectId === 'mathanalysis') return MA2_TOPIC_IDS[slug] || [];
     if (subjectId === 'linalg')       return LA2_TOPIC_IDS[slug] || [];
+    if (subjectId === 'linalg1')      return LA1_TOPIC_IDS[slug] || [];
     if (subjectId === 'fundamental')  return FUNDAMENTAL_TOPIC_IDS[slug] || [];
     if (subjectId === 'physics2')     return PHYSICS2_TOPIC_IDS[slug] || [];
     return [];
@@ -197,6 +199,8 @@ function renderModes() {
     renderFundamentalModes(grid, mistakes);
   } else if (subjectId === 'physics2') {
     renderPhysics2Modes(grid, mistakes);
+  } else if (subjectId === 'linalg1') {
+    renderLA1Modes(grid, mistakes);
   }
 }
 
@@ -838,6 +842,7 @@ function _getQuestionsForSubject(sid) {
   if (sid === 'drawing')      return window.DRAWING_QUESTIONS || [];
   if (sid === 'fundamental')  return window.FUNDAMENTAL_QUESTIONS || [];
   if (sid === 'physics2')     return window.PHYSICS2_QUESTIONS || [];
+  if (sid === 'linalg1')      return window.LA1_QUESTIONS || [];
   return [];
 }
 
@@ -968,4 +973,106 @@ function filterQByStatus(btn, status) {
 
 function goToQuestion(id) {
   window.location.href = `quiz.html?mode=all&noShuffle=1&startAt=${id}&subject=${subjectId}`;
+}
+
+// ── Linear Algebra 1 Mode cards ───────────────────────────────
+function renderLA1Modes(grid, mistakes) {
+  const all = window.LA1_QUESTIONS || [];
+  const total = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'linalg1') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'linalg1') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
+
+  grid.innerHTML = `
+    <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
+      <span class="mode-badge">${total}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      </div>
+      <div class="mode-name">All questions</div>
+      <div class="mode-desc">All ${total} questions · all topics</div>
+    </div>
+    <div class="mode-section-label">Practice</div>
+    <div class="mode-card ${mistakes.length === 0 ? 'disabled' : ''}" data-mode="mistakes" onclick="selectMode(this,'mistakes')">
+      <span class="mode-badge">${mistakes.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 7 23 1 17 1"/><path d="M1 11V9a10 10 0 0 1 18.8-4.7L23 7"/><polyline points="1 17 1 23 7 23"/><path d="M23 13v2a10 10 0 0 1-18.8 4.6L1 17"/></svg>
+      </div>
+      <div class="mode-name">Mistakes only</div>
+      <div class="mode-desc">Review your weak spots</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Unseen</div>
+      <div class="mode-desc">Continue where you left off</div>
+    </div>
+    <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
+      <span class="mode-badge" id="cntRandom">10</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Quick round</div>
+      <div class="mode-desc">N random questions</div>
+    </div>
+    <div class="mode-section-label">By topic</div>
+    <div class="mode-card" data-mode="matmul" onclick="selectMode(this,'matmul')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.matmul.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      </div>
+      <div class="mode-name">Matrix Multiplication</div>
+      <div class="mode-desc">Product of matrices, det(A·B)</div>
+    </div>
+    <div class="mode-card" data-mode="inverse" onclick="selectMode(this,'inverse')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.inverse.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      </div>
+      <div class="mode-name">Inverse Matrix</div>
+      <div class="mode-desc">A⁻¹, invertibility conditions</div>
+    </div>
+    <div class="mode-card" data-mode="determinants" onclick="selectMode(this,'determinants')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.determinants.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="3" x2="5" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><line x1="5" y1="3" x2="19" y2="3"/><line x1="5" y1="21" x2="19" y2="21"/></svg>
+      </div>
+      <div class="mode-name">Determinants</div>
+      <div class="mode-desc">det(A), cofactors, properties</div>
+    </div>
+    <div class="mode-card" data-mode="systems" onclick="selectMode(this,'systems')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.systems.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="mode-name">Systems of Equations</div>
+      <div class="mode-desc">Gaussian elimination, Cramer's rule</div>
+    </div>
+    <div class="mode-card" data-mode="properties" onclick="selectMode(this,'properties')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.properties.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="14" x2="22" y2="14"/><line x1="8" y1="2" x2="8" y2="22"/><line x1="14" y1="2" x2="14" y2="22"/></svg>
+      </div>
+      <div class="mode-name">Matrix Properties</div>
+      <div class="mode-desc">Rank, transpose, symmetric, trace</div>
+    </div>
+    <div class="mode-card" data-mode="eigenvalues" onclick="selectMode(this,'eigenvalues')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.eigenvalues.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      </div>
+      <div class="mode-name">Eigenvalues</div>
+      <div class="mode-desc">Characteristic polynomial, eigenvectors</div>
+    </div>
+    <div class="mode-card" data-mode="vectorspaces" onclick="selectMode(this,'vectorspaces')">
+      <span class="mode-badge">${LA1_TOPIC_IDS.vectorspaces.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+      <div class="mode-name">Vector Spaces</div>
+      <div class="mode-desc">Subspaces, linear independence, basis</div>
+    </div>`;
+  selectedCount = 10;
 }
