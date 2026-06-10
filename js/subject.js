@@ -8,7 +8,7 @@ let selectedMode = 'all';
 let selectedCount = 20;
 
 // Subjects that have questions ready
-const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental'];
+const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental', 'physics2'];
 
 document.addEventListener('DOMContentLoaded', () => {
   subjectId   = new URLSearchParams(location.search).get('s') || 'physics';
@@ -92,6 +92,7 @@ function renderTopics() {
     if (subjectId === 'mathanalysis') return MA2_TOPIC_IDS[slug] || [];
     if (subjectId === 'linalg')       return LA2_TOPIC_IDS[slug] || [];
     if (subjectId === 'fundamental')  return FUNDAMENTAL_TOPIC_IDS[slug] || [];
+    if (subjectId === 'physics2')     return PHYSICS2_TOPIC_IDS[slug] || [];
     return [];
   };
 
@@ -194,6 +195,8 @@ function renderModes() {
     renderDrawingModes(grid, mistakes);
   } else if (subjectId === 'fundamental') {
     renderFundamentalModes(grid, mistakes);
+  } else if (subjectId === 'physics2') {
+    renderPhysics2Modes(grid, mistakes);
   }
 }
 
@@ -728,6 +731,101 @@ function renderFundamentalModes(grid, mistakes) {
   selectedCount = 3;
 }
 
+function renderPhysics2Modes(grid, mistakes) {
+  const all = window.PHYSICS2_QUESTIONS || [];
+  const total = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'physics2') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'physics2') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
+
+  const t = PHYSICS2_TOPIC_IDS;
+
+  grid.innerHTML = `
+    <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
+      <span class="mode-badge">${total}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      </div>
+      <div class="mode-name">All questions</div>
+      <div class="mode-desc">All ${total} questions · full random</div>
+    </div>
+    <div class="mode-section-label">Practice</div>
+    <div class="mode-card ${mistakes.length === 0 ? 'disabled' : ''}" data-mode="mistakes" onclick="selectMode(this,'mistakes')">
+      <span class="mode-badge">${mistakes.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 7 23 1 17 1"/><path d="M1 11V9a10 10 0 0 1 18.8-4.7L23 7"/><polyline points="1 17 1 23 7 23"/><path d="M23 13v2a10 10 0 0 1-18.8 4.6L1 17"/></svg>
+      </div>
+      <div class="mode-name">Mistakes only</div>
+      <div class="mode-desc">Review your weak spots</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Unseen</div>
+      <div class="mode-desc">Continue where you left off</div>
+    </div>
+    <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
+      <span class="mode-badge" id="cntRandom">10</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Quick round</div>
+      <div class="mode-desc">N random questions</div>
+    </div>
+    <div class="mode-section-label">By topic</div>
+    <div class="mode-card" data-mode="electrostatics" onclick="selectMode(this,'electrostatics')">
+      <span class="mode-badge">${(t.electrostatics || []).length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Electrostatics</div>
+      <div class="mode-desc">Gauss's law, field, potential</div>
+    </div>
+    <div class="mode-card" data-mode="electricFieldMatter" onclick="selectMode(this,'electricFieldMatter')">
+      <span class="mode-badge">${(t.electricFieldMatter || []).length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+      </div>
+      <div class="mode-name">Electric Field in Matter</div>
+      <div class="mode-desc">Dielectrics, polarisation, capacitors</div>
+    </div>
+    <div class="mode-card" data-mode="magnetostatics" onclick="selectMode(this,'magnetostatics')">
+      <span class="mode-badge">${(t.magnetostatics || []).length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 22a10 10 0 0 1-10-10"/><path d="M12 6v4M12 14v4M8 12h4M12 12h4"/></svg>
+      </div>
+      <div class="mode-name">Magnetostatics</div>
+      <div class="mode-desc">Biot-Savart, Ampere's law, flux</div>
+    </div>
+    <div class="mode-card" data-mode="magneticFieldMatter" onclick="selectMode(this,'magneticFieldMatter')">
+      <span class="mode-badge">${(t.magneticFieldMatter || []).length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      </div>
+      <div class="mode-name">Magnetic Field in Matter</div>
+      <div class="mode-desc">Permeability, magnetisation, H field</div>
+    </div>
+    <div class="mode-card" data-mode="electrodynamics" onclick="selectMode(this,'electrodynamics')">
+      <span class="mode-badge">${(t.electrodynamics || []).length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="mode-name">Electrodynamics</div>
+      <div class="mode-desc">Maxwell's equations, induction, Poynting</div>
+    </div>
+    <div class="mode-card" data-mode="wavesOptics" onclick="selectMode(this,'wavesOptics')">
+      <span class="mode-badge">${(t.wavesOptics || []).length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12 Q6 4 10 12 Q14 20 18 12 Q22 4 24 12"/></svg>
+      </div>
+      <div class="mode-name">Waves & Optics</div>
+      <div class="mode-desc">Wave equation, refraction, intensity</div>
+    </div>`;
+  selectedCount = 10;
+}
+
 // ══════════════════════════════════════════════════════════════
 // QUESTION BROWSER — быстрый переход к нужному вопросу по ID
 // Работает для всех предметов
@@ -739,6 +837,7 @@ function _getQuestionsForSubject(sid) {
   if (sid === 'mathanalysis') return window.MA2_QUESTIONS || [];
   if (sid === 'drawing')      return window.DRAWING_QUESTIONS || [];
   if (sid === 'fundamental')  return window.FUNDAMENTAL_QUESTIONS || [];
+  if (sid === 'physics2')     return window.PHYSICS2_QUESTIONS || [];
   return [];
 }
 

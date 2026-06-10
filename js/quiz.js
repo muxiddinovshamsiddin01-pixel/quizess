@@ -40,6 +40,8 @@ window._quizReady = function() {
 
 function initQuiz() {
   qParams = getParams();
+  // Курс "уже сделан" только если ВСЕ вопросы правильно И ошибок нет
+  // В режиме mistakes — никогда не блокируем очки заранее (проверим после)
   _courseAlreadyDone = isCourseCompleted(qParams.subject);
   buildQuestions();
   renderQuestion();
@@ -62,9 +64,17 @@ function isCourseCompleted(subject) {
   return all.every(q => correctIds.has(q.id)) && mistakes.length === 0;
 }
 
+// ── Проверка: есть ли ошибки для работы над ними ──
+function hasPendingMistakes(subject) {
+  const mistakes = S.get('mistakes', subject) || [];
+  return mistakes.length > 0;
+}
+
 // ── Начислить очки за вопрос ──
 function awardPoints(isCorrect, isFlag, isMistakesMode) {
-  if (_courseAlreadyDone) return 0;
+  // Не начисляем если курс полностью пройден (квиз + работа над ошибками)
+  // НО: если мы сейчас в режиме mistakes — курс ещё не пройден, очки начислять нужно
+  if (_courseAlreadyDone && !isMistakesMode) return 0;
   if (!isCorrect) return 0;
 
   const elapsed = (Date.now() - _questionStartTime) / 1000;
@@ -90,12 +100,14 @@ function awardPoints(isCorrect, isFlag, isMistakesMode) {
 function updatePointsDisplay() {
   const el = document.getElementById('livePoints');
   if (!el) return;
-  if (_courseAlreadyDone) {
+  // Показываем "done" только если курс завершён И мы НЕ в режиме mistakes
+  if (_courseAlreadyDone && qParams.mode !== 'mistakes') {
     el.textContent = '🏆 done';
     el.title = 'Курс уже пройден — очки не начисляются';
     el.style.opacity = '0.5';
   } else {
     el.textContent = sessionPoints + ' ⭐';
+    el.style.opacity = '';
   }
 }
 
@@ -468,6 +480,10 @@ function buildQuestions() {
     else                               pool = [...all];
   } else if (qParams.subject === 'fundamental') {
     const topicIds = FUNDAMENTAL_TOPIC_IDS[mode];
+    if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
+    else          pool = [...all];
+  } else if (qParams.subject === 'physics2') {
+    const topicIds = PHYSICS2_TOPIC_IDS[mode];
     if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
     else          pool = [...all];
   } else {
@@ -1495,21 +1511,33 @@ function showDone() {
   if (results.length > 50) results.shift();
   S.set('results', results, qParams.subject);
 
-  // Submit to backend
-  // Считаем финальные очки: per_question_pts + бонус за результат + участие
-  let finalPoints = sessionPoints;
-  if (!_courseAlreadyDone) {
-    const completionBonus = pct === 100 ? 50 : pct >= 90 ? 25 : pct >= 75 ? 10 : 0;
-    const participationPts = 10;
-    finalPoints = sessionPoints + completionBonus + participationPts;
-  }
-
   // Проверяем завершение курса ПОСЛЕ сохранения correct_ids/mistakes
   const courseJustCompleted = !_courseAlreadyDone && isCourseCompleted(qParams.subject);
 
+  // Submit to backend
+  // Считаем финальные очки: per_question_pts + бонус за результат + участие
+  // В режиме mistakes очки начислялись в awardPoints — берём sessionPoints
+  // После полного прохождения (courseJustCompleted) — добавляем completion bonus
+  let finalPoints = sessionPoints;
+  const isMistakesRound = qParams.mode === 'mistakes';
+
+  if (!_courseAlreadyDone || isMistakesRound) {
+    if (!courseJustCompleted) {
+      // Обычный сеанс — добавляем бонус за результат и участие
+      const completionBonus = pct === 100 ? 50 : pct >= 90 ? 25 : pct >= 75 ? 10 : 0;
+      const participationPts = 10;
+      finalPoints = sessionPoints + completionBonus + participationPts;
+    } else {
+      // Курс только что завершён — бонус за completion
+      const completionBonus = 100; // особый бонус за полное прохождение
+      finalPoints = sessionPoints + completionBonus;
+    }
+  } else {
+    // Курс уже был завершён до этой сессии — 0 очков
+    finalPoints = 0;
+  }
+
   if (typeof submitQuizResult === 'function') {
-    // Передаём pre-calculated points через mode-суффикс чтобы backend их принял
-    // (backend пересчитает по своей формуле — итог близкий)
     submitQuizResult({
       subject: qParams.subject,
       mode: qParams.mode,
@@ -1517,7 +1545,8 @@ function showDone() {
       total,
       pct,
       time_seconds: time,
-      points_override: _courseAlreadyDone ? 0 : undefined,
+      // Если курс был завершён ДО этой сессии и это не режим mistakes — 0 очков
+      points_override: (_courseAlreadyDone && !isMistakesRound) ? 0 : undefined,
     });
   }
 
@@ -1572,42 +1601,135 @@ function showDone() {
     }, 100);
   }
 
-  // Retry mistakes button
-  const retryBtn = document.getElementById('retryMistakesBtn');
-  if (retryBtn) {
-    if (mistakeIds.length > 0) {
-      retryBtn.style.display = 'flex';
-      const badge = document.getElementById('mistakesCountBadge');
-      if (badge) badge.textContent = mistakeIds.length;
-    } else {
-      retryBtn.style.display = 'none';
-    }
-  }
+  // ── Определяем, нужна ли работа над ошибками ──
+  const hasMistakesNow  = newMistakes.length > 0;
 
-  // Mistakes list — скрыто, кнопка Retry Mistakes уже показывает счётчик
+  // Стандартную кнопку retryMistakes скрываем — заменяем своим блоком
+  const retryBtn = document.getElementById('retryMistakesBtn');
+  if (retryBtn) retryBtn.style.display = 'none';
+
+  // Mistakes list — не нужен
   const sec = document.getElementById('mistakesSection');
   if (sec) sec.innerHTML = '';
 
   // ── Очки и статус курса на done-экране ──
   const pointsEl = document.getElementById('donePoints');
   if (pointsEl) {
-    if (_courseAlreadyDone) {
-      pointsEl.innerHTML = `<span style="color:var(--text3);font-size:13px">🏆 Курс уже пройден — очки не начисляются</span>`;
+    if (_courseAlreadyDone && !isMistakesRound) {
+      // Курс был завершён ещё до начала этой сессии
+      pointsEl.innerHTML = `<span style="color:var(--text3);font-size:13px">🏆 Course already completed — no points awarded</span>`;
     } else if (courseJustCompleted) {
+      // Курс только что завершён в этой сессии (включая работу над ошибками)
       pointsEl.innerHTML = `
         <div style="text-align:center;margin-top:8px;">
           <div style="font-size:22px;font-weight:700;color:var(--am)">+${finalPoints} ⭐</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px">заработано за этот квиз</div>
-          <div style="margin-top:10px;padding:10px 16px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;font-size:13px;color:var(--am)">
-            🎓 Курс пройден полностью! Следующие попытки не дают очков.
-          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">earned this session 🎓</div>
         </div>`;
     } else {
       pointsEl.innerHTML = `
         <div style="text-align:center;margin-top:8px;">
           <div style="font-size:22px;font-weight:700;color:var(--pk2)">+${finalPoints} ⭐</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px">заработано за этот квиз</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">earned this session</div>
         </div>`;
+    }
+  }
+
+  // ── Блок Work on Mistakes / Course Completed ──
+  const doneActions = done.querySelector('.done-actions');
+  const oldBlock = done.querySelector('#workOnMistakesBlock');
+  if (oldBlock) oldBlock.remove();
+
+  if (isMistakesRound) {
+    // Завершили раунд работы над ошибками
+    if (!hasMistakesNow) {
+      // ✅ Все исправлено
+      const block = document.createElement('div');
+      block.id = 'workOnMistakesBlock';
+      block.innerHTML = `
+        <div style="margin:16px 0;padding:16px 20px;
+          background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(52,211,153,.06));
+          border:1px solid rgba(52,211,153,.35);border-radius:14px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:6px;">🎓</div>
+          <div style="font-size:15px;font-weight:700;color:#34d399;margin-bottom:4px;">All mistakes corrected!</div>
+          <div style="font-size:13px;color:var(--text3);line-height:1.5;">
+            ${courseJustCompleted
+              ? 'Course fully completed! You\'ve mastered this subject.'
+              : 'Great work! All errors fixed.'}
+          </div>
+        </div>`;
+      if (doneActions) doneActions.insertAdjacentElement('beforebegin', block);
+    } else {
+      // ❌ Ещё остались ошибки
+      const block = document.createElement('div');
+      block.id = 'workOnMistakesBlock';
+      block.innerHTML = `
+        <div style="margin:16px 0;padding:16px 20px;
+          background:linear-gradient(135deg,rgba(249,115,22,.1),rgba(249,115,22,.05));
+          border:1px solid rgba(249,115,22,.3);border-radius:14px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:6px;">📝</div>
+          <div style="font-size:14px;font-weight:600;color:#f97316;margin-bottom:8px;">
+            ${newMistakes.length} mistake${newMistakes.length > 1 ? 's' : ''} still remain
+          </div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.5;">
+            Keep working on them to complete the course.
+          </div>
+          <button onclick="retryMistakes()" style="
+            display:inline-flex;align-items:center;gap:8px;
+            padding:10px 20px;border-radius:12px;border:none;cursor:pointer;
+            background:linear-gradient(135deg,#f97316,#ef4444);
+            color:#fff;font-size:14px;font-weight:600;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            Continue Mistakes · ${newMistakes.length} left
+          </button>
+        </div>`;
+      if (doneActions) doneActions.insertAdjacentElement('beforebegin', block);
+    }
+  } else {
+    // Основной квиз
+    if (hasMistakesNow) {
+      // Есть ошибки — показываем блок "Work on Mistakes"
+      const block = document.createElement('div');
+      block.id = 'workOnMistakesBlock';
+      block.innerHTML = `
+        <div style="margin:16px 0;padding:18px 20px;
+          background:linear-gradient(135deg,rgba(249,115,22,.11),rgba(239,68,68,.07));
+          border:1px solid rgba(249,115,22,.35);border-radius:14px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:22px;">📋</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#f97316;">Work on Mistakes</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:1px;">
+                ${newMistakes.length} question${newMistakes.length > 1 ? 's' : ''} · earns points
+              </div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.5;">
+            Complete the mistakes round to fully finish the course.
+            Correct answers earn <strong style="color:var(--am)">7–10 ⭐</strong> each.
+          </div>
+          <button onclick="retryMistakes()" style="
+            width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+            padding:12px 20px;border-radius:12px;border:none;cursor:pointer;
+            background:linear-gradient(135deg,#f97316,#ef4444);
+            color:#fff;font-size:14px;font-weight:600;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            Start Mistakes Round · ${newMistakes.length} questions
+          </button>
+        </div>`;
+      if (doneActions) doneActions.insertAdjacentElement('beforebegin', block);
+    } else if (!_courseAlreadyDone && courseJustCompleted) {
+      // Нет ошибок + курс только что полностью пройден
+      const block = document.createElement('div');
+      block.id = 'workOnMistakesBlock';
+      block.innerHTML = `
+        <div style="margin:16px 0;padding:16px 20px;
+          background:linear-gradient(135deg,rgba(251,191,36,.13),rgba(251,191,36,.06));
+          border:1px solid rgba(251,191,36,.35);border-radius:14px;text-align:center;">
+          <div style="font-size:30px;margin-bottom:6px;">🎓</div>
+          <div style="font-size:15px;font-weight:700;color:var(--am);margin-bottom:4px;">Course Completed!</div>
+          <div style="font-size:13px;color:var(--text3);">All questions answered correctly. Future attempts won't earn points.</div>
+        </div>`;
+      if (doneActions) doneActions.insertAdjacentElement('beforebegin', block);
     }
   }
 }

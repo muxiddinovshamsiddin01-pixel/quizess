@@ -56,7 +56,7 @@ function renderOverallProgress() {
   const rows = Object.values(SUBJECTS).map(subj => {
     const st  = getSubjectStats(subj.id);
     const hex = colorMap[subj.color] || '#c850f0';
-    const IDS_MAP2 = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS };
+    const IDS_MAP2 = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS };
     const hasQuestionBank2 = !!IDS_MAP2[subj.id];
 
     let pct = 0, doneText = '';
@@ -177,7 +177,7 @@ function renderSubjects() {
     const st  = getSubjectStats(subj.id);
     const hex = colorMap[subj.color] || '#c850f0';
     // Determine which subjects have question banks with correct_ids tracking
-    const IDS_MAP = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS };
+    const IDS_MAP = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS };
     const hasQuestionBank = !!IDS_MAP[subj.id];
 
     let progressHtml = '';
@@ -285,8 +285,8 @@ function renderRecentFromBackend(results) {
   const wrap = document.getElementById('recentWrap');
   if (!wrap) return;
 
-  const colorMap = { physics:'#c850f0', linalg:'#00d4ff', drawing:'#f59e0b', mathanalysis:'#10b981' };
-  const nameMap  = { physics:'Physics', linalg:'Linear Algebra 2', drawing:'Engineering Drawing', mathanalysis:'Math Analysis 2' };
+  const colorMap = { physics:'#c850f0', linalg:'#00d4ff', drawing:'#f59e0b', mathanalysis:'#10b981', fundamental:'#8b5cf6', physics2:'#00d4ff' };
+  const nameMap  = { physics:'Physics', linalg:'Linear Algebra 2', drawing:'Engineering Drawing', mathanalysis:'Math Analysis 2', fundamental:'Fund. Strength', physics2:'Physics 2' };
 
   const items = results.slice(0, 8);
   wrap.innerHTML = `<div class="recent-grid">${items.map(r => {
