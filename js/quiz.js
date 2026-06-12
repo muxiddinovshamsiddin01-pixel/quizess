@@ -659,7 +659,7 @@ function renderQuestion() {
           <button class="md-tb-btn" data-action="h2"        title="Heading">H</button>
           <button class="md-tb-btn" data-action="code"      title="Inline code"><code style="font-size:11px">{ }</code></button>
         </div>
-        <textarea id="openAnswerTA" class="open-answer-ta" placeholder="Write your answer here…"></textarea>
+        <textarea id="openAnswerTA" class="open-answer-ta" placeholder="Write your answer here…">${q.answerTemplate ? escHtml(q.answerTemplate) : ''}</textarea>
         <div class="open-answer-footer">
           <button class="open-submit-btn" id="openSubmitBtn" onclick="submitOpen()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>

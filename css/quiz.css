@@ -422,6 +422,11 @@ em { color: #67e8f9; font-style: italic; }
   max-width: 100%;
 }
 
+/* Fundamental subject — limit image height so it doesn't fill the screen */
+.q-text img:not(.img-full):not(.img-sm) {
+  max-height: 340px;
+}
+
 .q-text .katex-display { margin: 6px 0; overflow-x: auto; }
 .q-text .katex { font-size: 0.95em; }
 
