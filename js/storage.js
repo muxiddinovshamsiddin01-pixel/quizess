@@ -184,6 +184,18 @@ const SUBJECTS = {
       safety:     { name: 'Stress & Safety Factor',color: '--gr'  },
     }
   },
+  applied_mechanics: {
+    id:    'applied_mechanics',
+    name:  'Applied Mechanics',
+    short: 'AM',
+    color: '--pk2',
+    icon:  'gear',
+    desc:  'Belt transmission, mechanisms, mobility, kinematics',
+    topics: {
+      belt:       { name: 'Belt Transmission',   color: '--pk2' },
+      mechanisms: { name: 'Mechanism Kinematics',color: '--cy'  },
+    }
+  },
   linalg1: {
     id:    'linalg1',
     name:  'Linear Algebra 1',
@@ -254,6 +266,13 @@ const FUNDAMENTAL_TOPIC_IDS = {
   structural: [5004],
   internal:   [5005],
   safety:     [5006],
+};
+
+// ── Applied Mechanics topic ID map ───────────────────────────
+// IDs 1–99 (see js/applied_mechanics_questions.js)
+const APPLIED_MECHANICS_TOPIC_IDS = {
+  belt:       [1],
+  mechanisms: [2],
 };
 
 // ── Linear Algebra 1 topic ID map ────────────────────────────

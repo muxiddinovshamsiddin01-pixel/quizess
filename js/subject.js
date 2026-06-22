@@ -8,7 +8,7 @@ let selectedMode = 'all';
 let selectedCount = 20;
 
 // Subjects that have questions ready
-const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental', 'physics2', 'linalg1'];
+const SUBJECTS_WITH_QUESTIONS = ['physics', 'mathanalysis', 'linalg', 'drawing', 'fundamental', 'physics2', 'linalg1', 'applied_mechanics', 'chemistry'];
 
 document.addEventListener('DOMContentLoaded', () => {
   subjectId   = new URLSearchParams(location.search).get('s') || 'physics';
@@ -95,6 +95,8 @@ function renderTopics() {
     if (subjectId === 'linalg1')      return LA1_TOPIC_IDS[slug] || [];
     if (subjectId === 'fundamental')  return FUNDAMENTAL_TOPIC_IDS[slug] || [];
     if (subjectId === 'physics2')     return PHYSICS2_TOPIC_IDS[slug] || [];
+    if (subjectId === 'applied_mechanics') return APPLIED_MECHANICS_TOPIC_IDS[slug] || [];
+    if (subjectId === 'chemistry')         return CHEMISTRY_TOPIC_IDS[slug] || [];
     return [];
   };
 
@@ -201,6 +203,10 @@ function renderModes() {
     renderPhysics2Modes(grid, mistakes);
   } else if (subjectId === 'linalg1') {
     renderLA1Modes(grid, mistakes);
+  } else if (subjectId === 'applied_mechanics') {
+    renderAppliedMechanicsModes(grid, mistakes);
+  } else if (subjectId === 'chemistry') {
+    renderChemistryModes(grid, mistakes);
   }
 }
 
@@ -843,6 +849,7 @@ function _getQuestionsForSubject(sid) {
   if (sid === 'fundamental')  return window.FUNDAMENTAL_QUESTIONS || [];
   if (sid === 'physics2')     return window.PHYSICS2_QUESTIONS || [];
   if (sid === 'linalg1')      return window.LA1_QUESTIONS || [];
+  if (sid === 'applied_mechanics') return window.APPLIED_MECHANICS_QUESTIONS || [];
   return [];
 }
 
@@ -1076,3 +1083,151 @@ function renderLA1Modes(grid, mistakes) {
     </div>`;
   selectedCount = 10;
 }
+
+// ── Applied Mechanics Mode cards ──────────────────────────────
+function renderAppliedMechanicsModes(grid, mistakes) {
+  const all   = window.APPLIED_MECHANICS_QUESTIONS || [];
+  const total = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'applied_mechanics') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'applied_mechanics') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
+
+  grid.innerHTML = `
+    <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
+      <span class="mode-badge">${total}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      </div>
+      <div class="mode-name">All questions</div>
+      <div class="mode-desc">All ${total} questions · all topics</div>
+    </div>
+    <div class="mode-section-label">Practice</div>
+    <div class="mode-card ${mistakes.length === 0 ? 'disabled' : ''}" data-mode="mistakes" onclick="selectMode(this,'mistakes')">
+      <span class="mode-badge">${mistakes.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 7 23 1 17 1"/><path d="M1 11V9a10 10 0 0 1 18.8-4.7L23 7"/><polyline points="1 17 1 23 7 23"/><path d="M23 13v2a10 10 0 0 1-18.8 4.6L1 17"/></svg>
+      </div>
+      <div class="mode-name">Mistakes only</div>
+      <div class="mode-desc">Review your weak spots</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Unseen</div>
+      <div class="mode-desc">Continue where you left off</div>
+    </div>
+    <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
+      <span class="mode-badge" id="cntRandom">2</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Quick round</div>
+      <div class="mode-desc">N random questions</div>
+    </div>
+    <div class="mode-section-label">By topic</div>
+    <div class="mode-card" data-mode="belt" onclick="selectMode(this,'belt')">
+      <span class="mode-badge">${APPLIED_MECHANICS_TOPIC_IDS.belt.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 9.5L15 9.5M9 14.5L15 14.5"/></svg>
+      </div>
+      <div class="mode-name">Belt Transmission</div>
+      <div class="mode-desc">Tensioners, torque, wrap angle</div>
+    </div>
+    <div class="mode-card" data-mode="mechanisms" onclick="selectMode(this,'mechanisms')">
+      <span class="mode-badge">${APPLIED_MECHANICS_TOPIC_IDS.mechanisms.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 9l6 6"/></svg>
+      </div>
+      <div class="mode-name">Mechanism Kinematics</div>
+      <div class="mode-desc">Mobility number, DOF, rolling without slipping</div>
+    </div>`;
+  selectedCount = 2;
+}
+
+function renderChemistryModes(grid, mistakes) {
+  const all    = window.CHEMISTRY_QUESTIONS || [];
+  const total  = all.length;
+  const correctIds = new Set(S.get('correct_ids', 'chemistry') || []);
+  const mistakeSet = new Set(S.get('mistakes', 'chemistry') || []);
+  const unseen = all.filter(q => !correctIds.has(q.id) && !mistakeSet.has(q.id));
+
+  grid.innerHTML = `
+    <div class="mode-card selected" data-mode="all" onclick="selectMode(this,'all')">
+      <span class="mode-badge">${total || '?'}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      </div>
+      <div class="mode-name">All questions</div>
+      <div class="mode-desc">All ${total || '?'} questions · all topics</div>
+    </div>
+    <div class="mode-section-label">Practice</div>
+    <div class="mode-card ${mistakes.length === 0 ? 'disabled' : ''}" data-mode="mistakes" onclick="selectMode(this,'mistakes')">
+      <span class="mode-badge">${mistakes.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 7 23 1 17 1"/><path d="M1 11V9a10 10 0 0 1 18.8-4.7L23 7"/><polyline points="1 17 1 23 7 23"/><path d="M23 13v2a10 10 0 0 1-18.8 4.6L1 17"/></svg>
+      </div>
+      <div class="mode-name">Mistakes only</div>
+      <div class="mode-desc">Review your weak spots</div>
+    </div>
+    <div class="mode-card ${unseen.length === 0 ? 'disabled' : ''}" data-mode="unseen" onclick="selectMode(this,'unseen')">
+      <span class="mode-badge" style="background:var(--cy)22;color:var(--cy)">${unseen.length}</span>
+      <div class="mode-icon-wrap" style="color:var(--cy)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="mode-name" style="color:var(--cy)">Unseen</div>
+      <div class="mode-desc">Continue where you left off</div>
+    </div>
+    <div class="mode-card" data-mode="random" onclick="selectMode(this,'random')">
+      <span class="mode-badge" id="cntRandom">20</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Quick round</div>
+      <div class="mode-desc">N random questions</div>
+    </div>
+    <div class="mode-section-label">By topic</div>
+    <div class="mode-card" data-mode="gases" onclick="selectMode(this,'gases')">
+      <span class="mode-badge">${CHEMISTRY_TOPIC_IDS.gases.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+      </div>
+      <div class="mode-name">Gas Laws</div>
+      <div class="mode-desc">Ideal gas, kinetic theory</div>
+    </div>
+    <div class="mode-card" data-mode="solutions" onclick="selectMode(this,'solutions')">
+      <span class="mode-badge">${CHEMISTRY_TOPIC_IDS.solutions.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>
+      </div>
+      <div class="mode-name">Solutions</div>
+      <div class="mode-desc">Colligative properties, concentration</div>
+    </div>
+    <div class="mode-card" data-mode="equilibrium" onclick="selectMode(this,'equilibrium')">
+      <span class="mode-badge">${CHEMISTRY_TOPIC_IDS.equilibrium.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8L22 12L18 16"/><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
+      </div>
+      <div class="mode-name">Equilibrium</div>
+      <div class="mode-desc">Le Chatelier, Kc, Kp</div>
+    </div>
+    <div class="mode-card" data-mode="electrochem" onclick="selectMode(this,'electrochem')">
+      <span class="mode-badge">${CHEMISTRY_TOPIC_IDS.electrochem.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mode-name">Electrochemistry</div>
+      <div class="mode-desc">Cells, electrolysis, Nernst</div>
+    </div>
+    <div class="mode-card" data-mode="stoichiometry" onclick="selectMode(this,'stoichiometry')">
+      <span class="mode-badge">${CHEMISTRY_TOPIC_IDS.stoichiometry.length}</span>
+      <div class="mode-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
+      </div>
+      <div class="mode-name">Stoichiometry</div>
+      <div class="mode-desc">Mole concept, limiting reagent</div>
+    </div>`;
+  selectedCount = 20;
+}
+

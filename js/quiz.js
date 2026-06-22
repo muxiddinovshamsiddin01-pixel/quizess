@@ -490,6 +490,14 @@ function buildQuestions() {
     const topicIds = LA1_TOPIC_IDS[mode];
     if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
     else          pool = [...all];
+  } else if (qParams.subject === 'applied_mechanics') {
+    const topicIds = APPLIED_MECHANICS_TOPIC_IDS[mode];
+    if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
+    else          pool = [...all];
+  } else if (qParams.subject === 'chemistry') {
+    const topicIds = CHEMISTRY_TOPIC_IDS[mode];
+    if (topicIds) pool = all.filter(q => topicIds.includes(q.id));
+    else          pool = [...all];
   } else {
     pool = [...all];
   }
@@ -589,6 +597,15 @@ function renderQuestion() {
     topicName = q.topic || 'Engineering Drawing';
   } else if (qParams.subject === 'fundamental') {
     topicName = q.topic || 'Fund. Strength of Materials';
+  } else if (qParams.subject === 'applied_mechanics') {
+    topicName = q.topic || 'Applied Mechanics';
+  } else if (qParams.subject === 'chemistry') {
+    const chemNames = {
+      gases: 'Gas Laws', solutions: 'Solutions', equilibrium: 'Equilibrium',
+      electrochem: 'Electrochemistry', thermo: 'Thermochemistry',
+      kinetics: 'Kinetics', bonding: 'Bonding', stoichiometry: 'Stoichiometry',
+    };
+    topicName = chemNames[q.topic] || q.topic || 'Chemistry';
   } else {
     topicName =
       TOPIC_IDS.mechanics.includes(q.id) ? 'Mechanics' :

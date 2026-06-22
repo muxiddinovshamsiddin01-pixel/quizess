@@ -51,12 +51,12 @@ function updateStreak(user) {
 // ── Overall progress card (across all subjects) ─────────────
 function renderOverallProgress() {
   const card = document.getElementById('overallCard');
-  const colorMap = { '--pk':'#c850f0','--cy':'#00d4ff','--am':'#f59e0b','--gr':'#10b981' };
+  const colorMap = { '--pk':'#c850f0','--pk2':'#e040fb','--cy':'#00d4ff','--am':'#f59e0b','--gr':'#10b981','--vi2':'#8b5cf6' };
 
   const rows = Object.values(SUBJECTS).map(subj => {
     const st  = getSubjectStats(subj.id);
     const hex = colorMap[subj.color] || '#c850f0';
-    const IDS_MAP2 = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS, linalg1: LA1_TOPIC_IDS, fundamental: FUNDAMENTAL_TOPIC_IDS };
+    const IDS_MAP2 = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS, linalg1: LA1_TOPIC_IDS, fundamental: FUNDAMENTAL_TOPIC_IDS, applied_mechanics: APPLIED_MECHANICS_TOPIC_IDS, chemistry: CHEMISTRY_TOPIC_IDS };
     const hasQuestionBank2 = !!IDS_MAP2[subj.id];
 
     let pct = 0, doneText = '';
@@ -171,13 +171,13 @@ function renderStats() {
 // ── Subject cards ─────────────────────────────────────────────
 function renderSubjects() {
   const grid = document.getElementById('subjectsGrid');
-  const colorMap = { '--pk':'#c850f0','--cy':'#00d4ff','--am':'#f59e0b','--gr':'#10b981' };
+  const colorMap = { '--pk':'#c850f0','--pk2':'#e040fb','--cy':'#00d4ff','--am':'#f59e0b','--gr':'#10b981','--vi2':'#8b5cf6' };
 
   grid.innerHTML = Object.values(SUBJECTS).map(subj => {
     const st  = getSubjectStats(subj.id);
     const hex = colorMap[subj.color] || '#c850f0';
     // Determine which subjects have question banks with correct_ids tracking
-    const IDS_MAP = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS, linalg1: LA1_TOPIC_IDS, fundamental: FUNDAMENTAL_TOPIC_IDS };
+    const IDS_MAP = { physics: TOPIC_IDS, linalg: LA2_TOPIC_IDS, mathanalysis: MA2_TOPIC_IDS, physics2: PHYSICS2_TOPIC_IDS, linalg1: LA1_TOPIC_IDS, fundamental: FUNDAMENTAL_TOPIC_IDS, applied_mechanics: APPLIED_MECHANICS_TOPIC_IDS };
     const hasQuestionBank = !!IDS_MAP[subj.id];
 
     let progressHtml = '';
@@ -311,6 +311,8 @@ function getSubjectIcon(name, color) {
     matrix:   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>`,
     pencil:   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
     function: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9"/><path d="M3 12h18M12 3c-2.5 3-4 6-4 9s1.5 6 4 9M12 3c2.5 3 4 6 4 9s-1.5 6-4 9"/></svg>`,
+    beam:     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="3" y1="12" x2="21" y2="12"/><path d="M3 6l9 6 9-6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
+    gear:     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
   };
   return icons[name] || icons.atom;
 }

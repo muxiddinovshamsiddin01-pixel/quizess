@@ -230,9 +230,12 @@
 <script src="js/mathanalysis_questions.js"></script>
 <script src="js/drawing_questions.js"></script>
 <script src="js/fundamental_questions.js"></script>
+<script src="js/applied_mechanics_questions.js"></script>
 <script src="js/physics2_data.js"></script>
 <script src="js/physics2_questions.js"></script>
 <script src="js/linalg1_questions.js"></script>
+<script src="js/chemistry_data.js"></script>
+<script src="js/chemistry_questions.js"></script>
 <script src="js/api.js"></script>
 
 <script>
@@ -255,6 +258,10 @@ window._quizInitialized = false;
     window.QUESTIONS_DATA = window.PHYSICS2_QUESTIONS || [];
   } else if (subject === 'linalg1') {
     window.QUESTIONS_DATA = window.LA1_QUESTIONS || [];
+  } else if (subject === 'applied_mechanics') {
+    window.QUESTIONS_DATA = window.APPLIED_MECHANICS_QUESTIONS || [];
+  } else if (subject === 'chemistry') {
+    window.QUESTIONS_DATA = window.CHEMISTRY_QUESTIONS || [];
   }
   // physics: QUESTIONS_DATA already set by physics_questions.js
 })();
